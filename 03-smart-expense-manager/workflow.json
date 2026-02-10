@@ -1,0 +1,454 @@
+{
+  "name": "Smart expense manager with AI receipt scanning",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🧾 Smart Expense Manager\n\nStreamline your expense reporting. This workflow processes receipts (via **Drive** or **Email**), uses **Gemini** to extract details (Vendor, Amount, Date), and auto-approves small expenses while flagging large ones for review in **Slack**.\n\n## How it works\n1. **Ingest:** Detects new receipt files in Google Drive.\n   - *Includes a **Test Mode** to simulate receipt data without real files.*\n2. **Extract:** Gemini scans the text to identify the Vendor, Total Amount, and Category.\n3. **Decide:**\n   - **< $100:** Auto-approves and logs to Google Sheets.\n   - **> $100:** Sends an approval request to Slack.\n\n## Setup steps\n1. **Connect:** Google Drive, Gemini, Google Sheets, Slack.\n2. **Config:** Open the **\"Config\"** node to set `SHEET_ID`, `SLACK_CHANNEL`, and `APPROVAL_LIMIT`.\n3. **Test:** Set `TEST_MODE` to `true` to verify logic instantly.",
+        "height": 340,
+        "width": 500,
+        "color": 3
+      },
+      "id": "sticky-main",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Limit & Mode.",
+        "height": 140,
+        "width": 240,
+        "color": 6
+      },
+      "id": "sticky-config",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📥 Receipt Ingestion\nHandles files or mock data.",
+        "height": 140,
+        "width": 840,
+        "color": 6
+      },
+      "id": "sticky-ingest",
+      "name": "Sticky Note - Ingest",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI Extraction\nParses receipt details.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "sticky-ai",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚖️ Approval Logic\nRoutes based on amount.",
+        "height": 140,
+        "width": 660,
+        "color": 6
+      },
+      "id": "sticky-logic",
+      "name": "Sticky Note - Logic",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "conf_1",
+              "name": "APPROVAL_LIMIT",
+              "value": "100",
+              "type": "number"
+            },
+            {
+              "id": "conf_2",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "conf_3",
+              "name": "SLACK_CHANNEL",
+              "value": "expenses",
+              "type": "string"
+            },
+            {
+              "id": "conf_4",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -360,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "fileCreated",
+        "options": {}
+      },
+      "id": "drive-trigger",
+      "name": "Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        500
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "googleDriveOAuth2Api",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is_test",
+              "leftValue": "={{ $('Config').first().json.TEST_MODE }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-mode",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        380,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Mock Receipt Text\nreturn [{\n  json: {\n    text: \"RECEIPT\\nVendor: Uber Rides\\nDate: 2023-10-28\\nAmount: $125.50\\nCategory: Travel\"\n  }\n}];"
+      },
+      "id": "mock-receipt",
+      "name": "Mock Receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Extract data from this receipt text:\n\"{{ $json.text }}\"\n\nReturn JSON ONLY:\n{ \"vendor\": \"string\", \"date\": \"YYYY-MM-DD\", \"amount\": number, \"category\": \"string\" }"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ],
+      "id": "gemini-extract",
+      "name": "Gemini: Extract",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "googlePalmApi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini JSON\nconst text = $input.first().json.content.parts[0].text;\nlet data = {};\ntry {\n  const jsonMatch = text.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) data = JSON.parse(jsonMatch[0]);\n  else data = { vendor: \"Unknown\", amount: 0 };\n} catch (e) {\n  data = { vendor: \"Error\", amount: 0 };\n}\n\nreturn { json: data };"
+      },
+      "id": "parse-json",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "high_value",
+              "leftValue": "={{ $json.amount }}",
+              "rightValue": "={{ $('Config').first().json.APPROVAL_LIMIT }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "approval-check",
+      "name": "Amount > Limit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1580,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "channelId": "={{ $('Config').first().json.SLACK_CHANNEL }}",
+        "text": "=💰 **Expense Approval Needed**\n\n**Vendor:** {{ $json.vendor }}\n**Amount:** ${{ $json.amount }}\n**Category:** {{ $json.category }}\n\n*Amount exceeds ${{ $('Config').first().json.APPROVAL_LIMIT }} limit.*",
+        "otherOptions": {}
+      },
+      "id": "notify-slack",
+      "name": "Request Approval",
+      "type": "n8n-nodes-base.slackweb",
+      "typeVersion": 1.1,
+      "position": [
+        1860,
+        200
+      ],
+      "credentials": {
+        "slackIncomingWebhookApi": {
+          "id": "slackIncomingWebhookApi",
+          "name": "Slack Webhook"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Expenses"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.date }}",
+            "Vendor": "={{ $json.vendor }}",
+            "Amount": "={{ $json.amount }}",
+            "Status": "Auto-Approved"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-sheet",
+      "name": "Log (Auto-Approve)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1860,
+        440
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gemini: Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Receipt": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Extract": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Amount > Limit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Amount > Limit?": {
+      "main": [
+        [
+          {
+            "node": "Request Approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log (Auto-Approve)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
