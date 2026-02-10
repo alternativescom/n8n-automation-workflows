@@ -1,6 +1,6 @@
 # AI Book Advisor: Reviews & Recommendations (Monetization Ready) 📚
 
-![Screenshot](screenshot.png)
+![Screenshot](スクリーンショット.png)
 
 ## Overview
 **Turn book curiosity into affiliate revenue.** 💰
