@@ -1,6 +1,6 @@
 # Smart Expense Manager with AI Receipt Scanning 🧾
 
-![Screenshot](screenshot.jpg)
+![Screenshot](スクリーンショット03.png)
 
 ## Overview
 **Automate expense reporting and approvals using AI.**
