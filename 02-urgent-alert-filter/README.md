@@ -1,6 +1,6 @@
 # Filter urgent Slack & Gmail alerts to Telegram using Gemini 🚨
 
-![Screenshot](screenshot.jpg)
+![Screenshot](screenshot.png)
 
 ## Overview
 **Never miss critical messages again.**
