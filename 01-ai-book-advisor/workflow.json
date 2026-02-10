@@ -1,0 +1,642 @@
+{
+  "name": "AI Book Advisor: Reviews & Recommendations (Monetization Ready)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 1. Input & Config\nSet up your API keys here. You can also add your **Amazon Affiliate Tag** to monetize the recommendations sent via email.",
+        "height": 300,
+        "width": 480,
+        "color": 7
+      },
+      "id": "db48b675-4ba6-4add-afca-0dd63e4ed63d",
+      "name": "Sticky Note Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2240,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 2. Data Enrichment\nFetches metadata (Cover, ISBN) from Google Books and searches for real-world reviews using Google Custom Search.",
+        "height": 300,
+        "width": 1000,
+        "color": 7
+      },
+      "id": "a9c81cfd-3ea2-4676-b9f0-786d3e88cf25",
+      "name": "Sticky Note Enrichment",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1664,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 3. AI Analysis\n**GPT-4o** analyzes the reviews to generate a summary and suggests 3 related books in a structured JSON format.",
+        "height": 460,
+        "width": 600,
+        "color": 7
+      },
+      "id": "0d241a1f-e8ad-4752-a528-663387634538",
+      "name": "Sticky Note AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 4. Delivery & Database\nGenerates a rich HTML email with affiliate links, sends it to the user, and logs the request to Google Sheets.",
+        "height": 460,
+        "width": 750,
+        "color": 7
+      },
+      "id": "b22cf7c7-08f1-42c0-ba32-9830a1930f8b",
+      "name": "Sticky Note Delivery",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        112,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "📚 Book Reading Advisor",
+        "formDescription": "Enter a book title. AI will research it and send you a summary with recommendations.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "書名 (Book Title)",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "著者名 (Author Name - Optional)"
+            },
+            {
+              "fieldLabel": "メール送信先 (Email Address)",
+              "fieldType": "email",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Start Research"
+        }
+      },
+      "id": "149dd9ea-ce51-4c6b-b0b1-ddec4516b76f",
+      "name": "Book Input Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -2176,
+        -96
+      ],
+      "webhookId": "0a6d4565-ecaf-4e65-8803-1c49cb3b12b6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "googleBooksApiUrl",
+              "value": "https://www.googleapis.com/books/v1/volumes",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "googleCustomSearchApiUrl",
+              "value": "https://www.googleapis.com/customsearch/v1",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "googleCustomSearchApiKey",
+              "value": "<__PLACEHOLDER_VALUE__Google_Custom_Search_API_Key__>",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "googleCustomSearchEngineId",
+              "value": "<__PLACEHOLDER_VALUE__Search_Engine_ID__>",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "userEmail",
+              "value": "={{ $json['メール送信先 (Email Address)'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "sheetId",
+              "value": "<__PLACEHOLDER_VALUE__Google_Sheet_ID__>",
+              "type": "string"
+            },
+            {
+              "id": "id-7",
+              "name": "amazonAffiliateTag",
+              "value": "<__PLACEHOLDER_VALUE__Amazon_Associate_Tag__>",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "f952e1d0-2b8e-4983-abc6-d1b4f2ac5d99",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1952,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration').first().json.googleBooksApiUrl }}?q=intitle:{{ encodeURIComponent($json.bookTitle) }}{{ $json.authorName ? '+inauthor:' + encodeURIComponent($json.authorName) : '' }}&maxResults=1&langRestrict=ja",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "a95844a8-84b1-4343-8461-6f4ab4e69c78",
+      "name": "Search Book on Google Books API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1600,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.totalItems }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2e0644a7-52ed-41c5-ae5b-85c998fdf009",
+      "name": "Check if Book Found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1376,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "bookTitle",
+              "value": "={{ $json.items[0].volumeInfo.title }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "bookAuthors",
+              "value": "={{ $json.items[0].volumeInfo.authors ? $json.items[0].volumeInfo.authors.join(', ') : 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "bookDescription",
+              "value": "={{ $json.items[0].volumeInfo.description || 'No description available' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "bookIsbn",
+              "value": "={{ $json.items[0].volumeInfo.industryIdentifiers ? $json.items[0].volumeInfo.industryIdentifiers.find(id => id.type === 'ISBN_13')?.identifier || $json.items[0].volumeInfo.industryIdentifiers[0]?.identifier : 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "bookCoverImage",
+              "value": "={{ $json.items[0].volumeInfo.imageLinks?.thumbnail || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "bookPublisher",
+              "value": "={{ $json.items[0].volumeInfo.publisher || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-7",
+              "name": "bookPublishedDate",
+              "value": "={{ $json.items[0].volumeInfo.publishedDate || 'Unknown' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "08a7b76f-27d5-4617-8bd1-5932d99661bf",
+      "name": "Extract Book Details",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1136,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration').first().json.googleCustomSearchApiUrl }}?key={{ $('Workflow Configuration').first().json.googleCustomSearchApiKey }}&cx={{ $('Workflow Configuration').first().json.googleCustomSearchEngineId }}&q={{ encodeURIComponent($json.bookTitle + ' 書評 感想') }}&num=5",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "9000298d-79ef-4c71-b33c-bef2909c2c62",
+      "name": "Search Book Reviews on Google",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -912,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "reviewSnippets",
+              "value": "={{ $json.items ? $json.items.map(item => item.snippet).join('\\n\\n') : 'No reviews found' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "1718e01c-419e-4555-bfe9-59b8a9a2a2dd",
+      "name": "Prepare AI Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=書籍情報:\n書名: {{ $json.bookTitle }}\n著者: {{ $json.bookAuthors }}\n\nあらすじ:\n{{ $json.bookDescription }}\n\nWeb上のレビュー:\n{{ $json.reviewSnippets }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "あなたはプロのブック・キュレーターです。読者の選書を支援し、読書体験を深めるための推薦を行います。\n\nあなたのタスク:\n1. 提供された書籍情報とレビューを分析し、この本の魅力を150文字以内で解説してください。\n2. この本に関心がある人が、さらに理解を深めるために読むべき「関連書籍」を3冊挙げてください。\n\n出力は必ずJSON形式で行ってください。"
+        }
+      },
+      "id": "25927407-e447-4987-be8c-eb3feb91c712",
+      "name": "Book Curator AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -496,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o"
+        },
+        "options": {}
+      },
+      "id": "a4990d33-ad4e-4b4a-9dd6-7d8988f09a75",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -512,
+        144
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "NrI3QNs1diRnllWw",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build HTML Email with Book Cover, AI Recommendations, and Purchase Links\n\nconst items = $input.all();\nconst results = [];\n\n// Get Affiliate Tag from Config\nconst configItem = $('Workflow Configuration').first();\nconst affiliateTag = configItem ? configItem.json.amazonAffiliateTag : '';\n\nfor (const item of items) {\n  const aiData = item.json;\n  const bookDetails = $('Extract Book Details').first().json;\n  \n  const bookTitle = bookDetails.bookTitle || 'Unknown Title';\n  const bookAuthor = bookDetails.bookAuthors || 'Unknown Author';\n  const bookCover = bookDetails.bookCoverImage || '';\n  const isbn = bookDetails.bookIsbn;\n\n  // Data from AI (Structured)\n  const aiComment = aiData.review_summary || 'No review available.';\n  const relatedBooks = aiData.related_books || [];\n\n  // Generate Main Book Links (with Affiliate Tag Support)\n  let mainAmazonLink = isbn && isbn !== 'N/A' \n    ? `https://www.amazon.co.jp/s?k=${isbn}` \n    : `https://www.amazon.co.jp/s?k=${encodeURIComponent(bookTitle + ' ' + bookAuthor)}`;\n  \n  if (affiliateTag && affiliateTag !== '<__PLACEHOLDER_VALUE__Amazon_Associate_Tag__>') {\n      mainAmazonLink += `&tag=${affiliateTag}`;\n  }\n    \n  const mainRakutenLink = isbn && isbn !== 'N/A'\n    ? `https://books.rakuten.co.jp/search?sitem=${isbn}`\n    : `https://books.rakuten.co.jp/search?sitem=${encodeURIComponent(bookTitle + ' ' + bookAuthor)}`;\n\n  // Helper to generate related book rows\n  let relatedBooksHtml = '';\n  relatedBooks.forEach(book => {\n    let rAmazon = `https://www.amazon.co.jp/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;\n    if (affiliateTag && affiliateTag !== '<__PLACEHOLDER_VALUE__Amazon_Associate_Tag__>') {\n      rAmazon += `&tag=${affiliateTag}`;\n    }\n\n    relatedBooksHtml += `\n      <div style=\"margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ccc;\">\n        <p style=\"margin: 0; font-weight: bold;\">『${book.title}』</p>\n        <p style=\"margin: 0; font-size: 0.9em; color: #666;\">${book.author}</p>\n        <p style=\"margin: 5px 0;\">${book.reason}</p>\n        <a href=\"${rAmazon}\" style=\"font-size: 0.8em; color: #4CAF50; text-decoration: none;\">Amazonで探す &rarr;</a>\n      </div>\n    `;\n  });\n\n  // Build rich HTML email\n  const htmlContent = `\n<!DOCTYPE html>\n<html lang=\"ja\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>読書アドバイザー</title>\n  <style>\n    body { font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }\n    .container { background-color: #ffffff; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }\n    .header { text-align: center; border-bottom: 3px solid #4CAF50; padding-bottom: 20px; margin-bottom: 30px; }\n    .book-cover { text-align: center; margin: 20px 0; }\n    .book-cover img { max-width: 150px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }\n    .section { margin: 25px 0; padding: 15px; background-color: #f4f4f4; border-left: 4px solid #4CAF50; }\n    .button { display: inline-block; padding: 10px 20px; margin: 5px; background-color: #FF9900; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\"><h1>📚 読書アドバイザー</h1></div>\n    ${bookCover ? `<div class=\"book-cover\"><img src=\"${bookCover}\"></div>` : ''}\n    <h2>${bookTitle}</h2>\n    <p>著者: ${bookAuthor}</p>\n    <div class=\"section\"><h4>🤖 AIキュレーターの解説</h4><p>${aiComment}</p></div>\n    <div class=\"section\"><h4>🔗 おすすめ関連書籍</h4>${relatedBooksHtml}</div>\n    <div style=\"text-align: center;\">\n      <a href=\"${mainAmazonLink}\" class=\"button\">Amazonで購入</a>\n    </div>\n  </div>\n</body>\n</html>\n  `;\n  \n  results.push({\n    json: {\n      htmlEmail: htmlContent,\n      emailSubject: `📚 書籍レポート: ${bookTitle}`\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "c1539010-d774-48d0-9603-e92a5bd6612a",
+      "name": "Build HTML Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Workflow Configuration').first().json.userEmail }}",
+        "subject": "={{ $json.emailSubject }}",
+        "message": "={{ $json.htmlEmail }}",
+        "options": {}
+      },
+      "id": "abf0cb68-6d2f-4b45-9b22-d8b2d541dd42",
+      "name": "Send Email Notification",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        384,
+        -96
+      ],
+      "webhookId": "8fe18dee-cdd1-445f-8e8d-25c6794bc380",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qVmR1ytFIlpRVwxW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.sheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "History"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "book_title": "={{ $('Extract Book Details').first().json.bookTitle }}",
+            "author": "={{ $('Extract Book Details').first().json.bookAuthors }}",
+            "ai_comment": "={{ $('Book Curator AI Agent').first().json.review_summary }}",
+            "user_email": "={{ $('Workflow Configuration').first().json.userEmail }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "ad521204-49aa-4cfc-8009-22500f5d8d77",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        -96
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kETRjtRKedfCcNUZ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Workflow Configuration').first().json.userEmail }}",
+        "subject": "📚 読書アドバイザー: 書籍が見つかりませんでした",
+        "emailType": "text",
+        "message": "=申し訳ございません。\n\n入力された書名「{{ $('Workflow Configuration').first().json.bookTitle }}」に該当する書籍が見つかりませんでした。\n\n以下をご確認ください：\n- 書名のスペルが正しいか\n- 正式な書名で検索しているか\n- 著者名を追加してみる\n\nもう一度お試しください。",
+        "options": {}
+      },
+      "id": "3457e3dd-98c3-4880-ac5a-70a09b205b8e",
+      "name": "Send Not Found Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1136,
+        176
+      ],
+      "webhookId": "f2fa6c4a-77e2-4174-9d90-8f3d1c7ceafa",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qVmR1ytFIlpRVwxW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"review_summary\": \"This book is a masterpiece of...\",\n  \"related_books\": [\n    {\n      \"title\": \"Related Book 1\",\n      \"author\": \"Author A\",\n      \"reason\": \"Similar themes of...\"\n    },\n    {\n      \"title\": \"Related Book 2\",\n      \"author\": \"Author B\",\n      \"reason\": \"Explores the concept of...\"\n    }\n  ]\n}"
+      },
+      "id": "86c0c80a-2ad4-47c8-931f-a4c83491b043",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -336,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# AI Book Advisor: Reviews & Recommendations\n\n## Overview\n**AI Book Curator with Monetization Support.** 📚💰\nTakes a book request, researches reviews, and sends an AI-curated summary with recommendations. Now includes **Amazon Affiliate Tag** support for monetization.\n\n## How it works\n1. **Input:** Form accepts Title & Email.\n2. **Enrich:** Fetches metadata (Google Books) & reviews (Google Search).\n3. **Analyze:** AI Agent summarizes appeal and suggests 3 related books.\n4. **Deliver:** Sends an HTML email with **Affiliate Links** and logs history to Sheets.\n\n## Setup Steps\n1. **Sheets:** Create columns: `date`, `book_title`, `author`, `ai_comment`, `user_email`.\n2. **Config:** Open **\"Sticky Note Input\"** section. Enter API Keys and optional `amazonAffiliateTag`.\n\n## Requirements\n- OpenAI & Google Custom Search API\n- Gmail & Google Sheets",
+        "height": 550,
+        "width": 500
+      },
+      "id": "09c4911c-c4d1-4106-bb0e-d5d40294034d",
+      "name": "Sticky Note Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2800,
+        -192
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Book Input Form": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Search Book on Google Books API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Book on Google Books API": {
+      "main": [
+        [
+          {
+            "node": "Check if Book Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Book Found": {
+      "main": [
+        [
+          {
+            "node": "Extract Book Details",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Not Found Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Book Details": {
+      "main": [
+        [
+          {
+            "node": "Search Book Reviews on Google",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Book Reviews on Google": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Input": {
+      "main": [
+        [
+          {
+            "node": "Book Curator AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Book Curator AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Curator AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Build HTML Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build HTML Email": {
+      "main": [
+        [
+          {
+            "node": "Send Email Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Notification": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Book Curator AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "df03b6d9-aad5-4885-9760-0e12d5c2100c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "Ys1mX5cL0i3lwaJB",
+  "tags": []
+}
