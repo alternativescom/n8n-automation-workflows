@@ -31,3 +31,7 @@ This workflow turns your n8n into a personal butler. Just speak into your phone 
 - n8n v1.x or later
 - Google Gemini API Key
 - (Optional) IFTTT or Siri Shortcuts for voice input
+
+## 📖 Tutorial / Article
+I wrote a detailed tutorial (in Japanese) about how I built this workflow:
+[**【n8n】寝る前に話すだけ。「AI執事」が日記・タスク・健康管理を全自動化してくれるワークフローを作った**](https://zenn.dev/webook/articles/8eab54b49e1034)
