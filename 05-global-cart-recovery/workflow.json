@@ -1,0 +1,420 @@
+{
+  "name": "Recover abandoned carts with localized emails using Shopify, GA4, and Gemini",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🛒 Global Cart Recovery AI\n\nRecover lost sales by sending hyper-personalized emails. This workflow detects abandoned carts in **Shopify**, identifies the customer's location, and uses **Gemini** to draft a recovery email in their local language, enriched with trending items from **GA4**.\n\n## How it works\n1. **Fetch:** Retrieves abandoned checkouts from Shopify and top-visited pages from GA4.\n   - *Includes a **Test Mode** to simulate international abandoned carts (e.g., User in France).*\n2. **Localize:** Gemini detects the country (e.g., \"FR\") and writes the email in the appropriate language (French).\n3. **Enrich:** Adds a \"Trending Now\" section based on real GA4 traffic data.\n4. **Send:** Sends the draft via **Gmail** (or creates a draft).\n\n## Setup steps\n1. **Connect:** Shopify, GA4, Gemini, Gmail.\n2. **Config:** Open the **\"Config\"** node to set your `SENDER_NAME`.\n3. **Test:** Set `TEST_MODE` to `true` to generate mock international data.",
+        "height": 340,
+        "width": 500,
+        "color": 3
+      },
+      "id": "sticky-main",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Sender Info.",
+        "height": 140,
+        "width": 240,
+        "color": 6
+      },
+      "id": "sticky-config",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📦 Data Collection\nGets Carts & Trends.",
+        "height": 140,
+        "width": 840,
+        "color": 6
+      },
+      "id": "sticky-data",
+      "name": "Sticky Note - Data",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🌍 AI Localization\nWrites in local language.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "sticky-ai",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📧 Engagement\nSends the email.",
+        "height": 140,
+        "width": 400,
+        "color": 6
+      },
+      "id": "sticky-email",
+      "name": "Sticky Note - Email",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "conf_1",
+              "name": "SENDER_NAME",
+              "value": "Support Team",
+              "type": "string"
+            },
+            {
+              "id": "conf_2",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -360,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Daily Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -600,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is_test",
+              "leftValue": "={{ $('Config').first().json.TEST_MODE }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-mode",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        380,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "abandonedCheckout",
+        "operation": "getAll",
+        "limit": 5,
+        "options": {
+          "status": "open"
+        }
+      },
+      "id": "shopify-fetch",
+      "name": "Get Abandoned Carts",
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [
+        620,
+        200
+      ],
+      "credentials": {
+        "shopifyApi": {
+          "id": "shopifyApi",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "report",
+        "dateRange": "custom",
+        "startDate": "={{ $today.minus({days: 7}).format('yyyy-MM-dd') }}",
+        "endDate": "={{ $today.format('yyyy-MM-dd') }}",
+        "metrics": [
+          "activeUsers"
+        ],
+        "dimensions": [
+          "pageTitle"
+        ]
+      },
+      "id": "ga4-fetch",
+      "name": "Get Trending Pages",
+      "type": "n8n-nodes-base.googleAnalytics4",
+      "typeVersion": 1,
+      "position": [
+        820,
+        200
+      ],
+      "credentials": {
+        "googleAnalytics4OAuth2Api": {
+          "id": "googleAnalytics4OAuth2Api",
+          "name": "Google Analytics 4 account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Mock International Data\nreturn [{\n  json: {\n    customer_email: \"jean.pierre@example.com\",\n    customer_name: \"Jean Pierre\",\n    country_code: \"FR\",\n    product: \"Premium Leather Bag\",\n    price: \"€150.00\",\n    trending_item: \"Summer Scarf Collection\"\n  }\n}];"
+      },
+      "id": "mock-data",
+      "name": "Mock Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Marketing Expert.\nWrite a friendly abandoned cart email for this customer.\n\n[Details]\nName: {{ $json.customer_name || $json.billing_address.first_name }}\nItem: {{ $json.product || $json.line_items[0].title }}\nCountry: {{ $json.country_code || $json.billing_address.country_code }}\nTrending Trend: {{ $json.trending_item || \"New Arrivals\" }}\n\n[Task]\n1. Detect the language based on Country Code (e.g., FR -> French, JP -> Japanese).\n2. Write the Subject and Body in that language.\n3. Add a P.S. mentioning the \"Trending Trend\" as a recommendation.\n\n[Output JSON]\n{ \"language\": \"Language Name\", \"subject\": \"...\", \"body\": \"...\" }"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ],
+      "id": "gemini-write",
+      "name": "Gemini: Write Email",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "googlePalmApi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini JSON\nconst text = $input.first().json.content.parts[0].text;\nlet data = {};\ntry {\n  const jsonMatch = text.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) data = JSON.parse(jsonMatch[0]);\n  else data = { subject: \"Error\", body: \"Could not generate\" };\n} catch (e) {\n  data = { subject: \"Error\", body: \"Parse Error\" };\n}\n\n// Pass through email for the next node\ndata.email = $('Mock Data').first().json.customer_email || \"test@example.com\";\n\nreturn { json: data };"
+      },
+      "id": "parse-json",
+      "name": "Parse Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {}
+      },
+      "id": "send-gmail",
+      "name": "Send Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1580,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "gmailOAuth2Api",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Check": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Abandoned Carts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Abandoned Carts": {
+      "main": [
+        [
+          {
+            "node": "Get Trending Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Trending Pages": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Write Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Data": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Write Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Write Email": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Send Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
