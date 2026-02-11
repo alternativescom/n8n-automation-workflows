@@ -1,0 +1,558 @@
+{
+  "name": "Smart Morning Guard: Weather & Train AI Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🌅 Smart Morning Guard\n\nWake up prepared. This workflow runs every morning (e.g., 5:00 AM), fetches local **Weather** and **Train Delays** (RSS), and uses **Gemini** to decide if you need to wake up early or take an umbrella.\n\n## How it works\n1. **Trigger:** Schedule (Daily) or Manual Test.\n   - *Includes a **Test Mode** to simulate \"Heavy Storm & Train Suspension\" events.*\n2. **Fetch:** Gets real-time weather (OpenWeather) and delay news (Google News RSS).\n3. **Analyze:** Gemini evaluates the severity. (e.g., \"Rain\" is normal, \"Typhoon\" is emergency).\n4. **Action:**\n   - **Emergency:** Sends immediate alert & triggers SwitchBot (optional).\n   - **Normal:** Sends a routine briefing later.\n\n## Setup steps\n1. **Connect:** OpenWeatherMap, Gemini, Gmail.\n2. **Config:** Open **\"Config\"** to set Location, Train Line, and Email.\n3. **Test:** Set `TEST_MODE` to `true` to verify the emergency logic.",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "id": "sticky-main",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Location & APIs.",
+        "height": 140,
+        "width": 240,
+        "color": 6
+      },
+      "id": "sticky-config",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📡 Data Collection\nReal API vs Mock Data.",
+        "height": 340,
+        "width": 760,
+        "color": 6
+      },
+      "id": "sticky-data",
+      "name": "Sticky Note - Data",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI Judgment\nDecides Urgency.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "sticky-ai",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🚨 Routing & Alert\nEmergency vs Normal.",
+        "height": 320,
+        "width": 600,
+        "color": 6
+      },
+      "id": "sticky-route",
+      "name": "Sticky Note - Route",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1480,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 5
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Wake Up Check (5:00 AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -600,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "LOCATION",
+              "value": "Tokyo,JP",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "TRAIN_LINE",
+              "value": "Yamanote Line",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "USER_EMAIL",
+              "value": "me@example.com",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "OPENWEATHER_API_KEY",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -360,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is_test",
+              "leftValue": "={{ $('Config').first().json.TEST_MODE }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-mode",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Mock Emergency Data\nreturn [{\n  json: {\n    weather_desc: \"Heavy Thunderstorm\",\n    temp: 18,\n    news_titles: \"Major delay on Yamanote Line due to power outage, Suspension of service expected all morning\"\n  }\n}];"
+      },
+      "id": "mock-data",
+      "name": "Mock Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $('Config').first().json.LOCATION }}"
+            },
+            {
+              "name": "appid",
+              "value": "={{ $('Config').first().json.OPENWEATHER_API_KEY }}"
+            },
+            {
+              "name": "units",
+              "value": "metric"
+            },
+            {
+              "name": "lang",
+              "value": "en"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-weather",
+      "name": "Get Weather",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        460,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://news.google.com/rss/search?q=' + encodeURIComponent($('Config').first().json.TRAIN_LINE + ' delay suspended') + '&hl=en-US&gl=US&ceid=US:en' }}",
+        "options": {}
+      },
+      "id": "get-news",
+      "name": "Get Train News",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        620,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare context for AI\n// Merges data from either Mock path or Real API path\n\nconst mode = $('Config').first().json.TEST_MODE;\n\nif (mode === 'true') {\n  return $('Mock Data').all();\n}\n\n// Process Real Data\nconst weather = $('Get Weather').first().json;\nconst newsItems = $('Get Train News').all();\nconst newsTitles = newsItems.map(i => i.json.title).join(', ');\n\nreturn [{\n  json: {\n    weather_desc: weather.weather[0].description,\n    temp: weather.main.temp,\n    news_titles: newsTitles || \"No recent delay news.\"\n  }\n}];"
+      },
+      "id": "prepare-data",
+      "name": "Prepare Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a smart morning assistant.\nAnalyze the data to determine if the user needs to wake up early.\n\nCondition for EMERGENCY:\n- Weather: Heavy rain, snow, storm.\n- Train: Delays, suspension, accident.\n\n[Data]\nWeather: {{ $json.weather_desc }}, Temp: {{ $json.temp }}C\nNews: {{ $json.news_titles }}\n\n[Output Format]\nOutput ONLY JSON.\n{\n  \"status\": \"EMERGENCY\" or \"NORMAL\",\n  \"reason\": \"Short reason\",\n  \"email_subject\": \"Subject\",\n  \"email_body\": \"HTML body\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        300
+      ],
+      "id": "gemini-judge",
+      "name": "Gemini: Judge",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "googlePalmApi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini Output\nconst text = $input.first().json.content.parts[0].text;\nlet result = {};\ntry {\n  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  result = JSON.parse(cleanText);\n} catch (e) {\n  result = { status: \"NORMAL\", reason: \"Parse Error\", email_subject: \"Morning Update\", email_body: \"Error parsing AI response.\" };\n}\nreturn { json: result };"
+      },
+      "id": "parse-response",
+      "name": "Parse Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is_emergency",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "EMERGENCY",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "is-emergency",
+      "name": "Is Emergency?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Config').first().json.USER_EMAIL }}",
+        "subject": "={{ $json.email_subject }}",
+        "emailType": "text",
+        "message": "={{ $json.email_body }}",
+        "options": {}
+      },
+      "id": "send-email-urgent",
+      "name": "Send Email (Urgent)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1800,
+        200
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "gmailOAuth2Api",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 90,
+        "unit": "minutes"
+      },
+      "id": "wait-node",
+      "name": "Wait 90 mins",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1740,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Config').first().json.USER_EMAIL }}",
+        "subject": "={{ $json.email_subject }}",
+        "emailType": "text",
+        "message": "={{ $json.email_body }}",
+        "options": {}
+      },
+      "id": "send-email-normal",
+      "name": "Send Email (Normal)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1960,
+        420
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "gmailOAuth2Api",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wake Up Check (5:00 AM)": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Data": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Weather": {
+      "main": [
+        [
+          {
+            "node": "Get Train News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Train News": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Context": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Judge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Judge": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Is Emergency?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Emergency?": {
+      "main": [
+        [
+          {
+            "node": "Send Email (Urgent)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 90 mins",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 90 mins": {
+      "main": [
+        [
+          {
+            "node": "Send Email (Normal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
