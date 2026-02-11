@@ -1,6 +1,6 @@
 # Marketing Anomaly Detector (GA4 & Shopify) 📈
 
-![Screenshot](04-marketing-anomaly-detector/スクリーンショット 2026-02-11 9.01.29.png)
+![Screenshot](スクリーンショット04.png)
 
 ## Overview
 **Monitor your e-commerce health by detecting traffic-sales mismatches.**
