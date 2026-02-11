@@ -29,3 +29,7 @@ Writing daily reports is a hassle. This workflow connects to your **GitHub** rep
 - GitHub Account & Personal Access Token
 - Slack Workspace & Bot Token
 - Google Gemini API Key
+
+## 📖 Tutorial / Article
+I wrote a detailed tutorial (in Japanese) about how I built this workflow, especially focusing on the complex **Slack App & Permissions setup**.
+[**【n8n】「今日何やったっけ？」を撲滅。GitHubとSlackから「開発日報」を全自動生成するワークフロー**](https://zenn.dev/webook/articles/73f4af99d86286)
