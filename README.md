@@ -19,6 +19,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**05. Global Cart Recovery**](./05-global-cart-recovery) | **Multi-language CRO.** Detects abandoned carts, identifies the user's country, and sends AI-localized recovery emails. | Shopify, Gemini, GA4, Gmail |
 | [**06. Elderly Care Monitor**](./06-elderly-care-monitor) | **Health & Safety.** Monitors LINE activity and sentiment to detect distress signals from elderly family members. | LINE, Gemini, Google Sheets |
 | [**07. AI Nightly Butler**](./07-ai-nightly-butler) | **Voice Journal.** Sorts voice notes into Diary, Tasks, and Health logs using AI, then sends a nightly summary. | Webhook, Gemini, Sheets, Gmail |
+| [**08. Lazy Chef**](./08-ai-recipe-generator) | **AI Recipe Gen.** Generates 3 recipe variations (Speed/Healthy/Creative) from leftovers and emails a visual menu. | Form, Gemini, Google Search, Sheets |
 
 *(More workflows are currently under development. Target: 20+)*
 
