@@ -1,6 +1,6 @@
 # Smart Developer Journal: GitHub & Slack to Daily Report 👨‍💻
 
-![Screenshot](screenshot.jpg)
+![Screenshot](スクリーンショット10.png)
 
 ## Overview
 **Automate your daily engineering stand-up report.**
