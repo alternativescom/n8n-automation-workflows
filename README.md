@@ -22,6 +22,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**08. Lazy Chef**](./08-ai-recipe-generator) | **AI Recipe Gen.** Generates 3 recipe variations (Speed/Healthy/Creative) from leftovers and emails a visual menu. | Form, Gemini, Google Search, Sheets |
 | [**09. Smart Morning Guard**](./09-smart-morning-guard) | **AI Morning Alarm.** Checks weather & train delays at 5 AM. Wakes you up early only if Gemini detects an emergency. | OpenWeather, RSS, Gemini, Gmail |
 | [**10. Smart Developer Journal**](./10-smart-developer-journal) | **Auto Daily Report.** Aggregates GitHub commits & Slack messages, then AI writes your "Done/Doing/Blockers" report. | GitHub, Slack, Gemini |
+| [**11. AI Invoice Clerk**](./11-ai-invoice-clerk) | **Accounting Auto.** Monitors Gmail for invoices, uses Gemini Vision to extract data (Amount/Vendor), and logs to Sheets. | Gmail, Gemini Vision, Sheets, Slack |
 
 *(More workflows are currently under development. Target: 20+)*
 
