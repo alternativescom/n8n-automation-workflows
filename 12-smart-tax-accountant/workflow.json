@@ -1,0 +1,388 @@
+{
+  "name": "Smart Tax Accountant: Auto-Categorize Receipts for Tax Return",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🧾 Smart Tax Accountant\n\nAutomate your tax return prep. Upload a receipt image, and **Gemini** will extract the details and categorize the expense (e.g., \"Supplies\", \"Travel\") automatically.\n\n## How it works\n1. **Input:** Upload receipt via **n8n Form** (or use Test Mode).\n   - *Includes a **Test Mode** to simulate a \"Coffee at Starbucks\" receipt.*\n2. **Analyze:** Gemini (Vision) reads the image to extract Date, Amount, and Vendor.\n3. **Categorize:** Gemini determines the tax category (Account Title) based on the content.\n4. **Log:** Saves clean data to **Google Sheets** for your tax filing.\n\n## Setup steps\n1. **Connect:** Google Gemini, Google Sheets.\n2. **Config:** Open **\"Config\"** to set Sheet ID.\n3. **Test:** Set `TEST_MODE` to `true` to verify the logic instantly.",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "id": "01030e59-6d53-4067-acfb-1d93710c06a6",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1248,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Sheet ID & Mode.",
+        "height": 140,
+        "color": 6
+      },
+      "id": "1c7f9e94-137c-4875-bd73-281b5d0b595b",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📸 Receipt Input\nForm Upload or Mock.",
+        "height": 340,
+        "width": 760,
+        "color": 6
+      },
+      "id": "04d5607d-fdd3-4187-a5c6-72420f527de2",
+      "name": "Sticky Note - Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI Accountant\nExtracts & Categorizes.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "645d25ae-13bd-420e-8b23-b230027b6756",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        624,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📊 Tax Database\nLogs to Sheets.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "ebea3a83-e55b-4d3e-a6f5-e6ce73ac879f",
+      "name": "Sticky Note - DB",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "cac924da-5a46-4c80-9430-0bc7372f5bdc",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -384,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "🧾 Receipt Uploader",
+        "formDescription": "Upload a receipt image for tax categorization.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Receipt Image",
+              "fieldType": "file",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b4c86477-8a23-47d5-8034-e1bead974bc8",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -624,
+        96
+      ],
+      "webhookId": "tax-receipt-upload"
+    },
+    {
+      "parameters": {},
+      "id": "f1b4e134-8341-4cac-b3d6-e4eb010e64f8",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cd48412a-b1c7-41ad-9d5c-8f62fc34dcbf",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -48,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate Receipt Data (Gemini Output)\nreturn [{\n  json: {\n    vendor: \"Starbucks Coffee\",\n    date: \"2026-02-12\",\n    amount: 850,\n    currency: \"JPY\",\n    category: \"Meeting Expenses (会議費)\",\n    summary: \"Coffee meeting with client\"\n  }\n}];"
+      },
+      "id": "394dd1a0-06a8-4193-ba96-887a833ff478",
+      "name": "Mock Receipt Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Japanese Tax Accountant.\nAnalyze the attached receipt image and extract details.\n\n[Tasks]\n1. Extract Vendor, Date, Amount.\n2. Categorize the expense into Japanese Tax Account Titles (勘定科目).\n   - e.g., 消耗品費, 旅費交通費, 会議費, 新聞図書費, 通信費.\n\n[Output JSON ONLY]\n{\n  \"vendor\": \"...\",\n  \"date\": \"YYYY-MM-DD\",\n  \"amount\": 1000,\n  \"currency\": \"JPY\",\n  \"category\": \"Account Title (e.g. 消耗品費)\",\n  \"summary\": \"Brief description\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        32,
+        256
+      ],
+      "id": "ae707371-9313-4b88-bd11-55b00caf5b42",
+      "name": "Gemini (Vision)",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Mock and Real Data\nconst mode = $('Config').first().json.TEST_MODE;\nlet data = {};\n\nif (mode === 'true') {\n  data = $('Mock Receipt Data').first().json;\n} else {\n  // Parse Gemini JSON\n  const text = $('Gemini (Vision)').first().json.content.parts[0].text;\n  try {\n    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n    data = JSON.parse(cleanText);\n  } catch (e) {\n    data = { vendor: \"Error\", amount: 0, category: \"Unknown\" };\n  }\n}\n\nreturn { json: data };"
+      },
+      "id": "5b63055d-3633-4f27-bd0b-05036343aec0",
+      "name": "Normalize Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Expenses"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.date }}",
+            "Vendor": "={{ $json.vendor }}",
+            "Amount": "={{ $json.amount }}",
+            "Category": "={{ $json.category }}",
+            "Memo": "={{ $json.summary }}",
+            "Logged At": "={{ $now.format('yyyy-MM-dd HH:mm') }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "4a916642-1256-412a-b455-63a64a445cfa",
+      "name": "Save to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1152,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kETRjtRKedfCcNUZ",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gemini (Vision)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Receipt Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Receipt Data": {
+      "main": [
+        [
+          {
+            "node": "Normalize Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (Vision)": {
+      "main": [
+        [
+          {
+            "node": "Normalize Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Data": {
+      "main": [
+        [
+          {
+            "node": "Save to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Sheets": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "d6024029-5044-432b-acd5-71b07eda9ae5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "iubi4c2RciB37pvJ",
+  "tags": []
+}
