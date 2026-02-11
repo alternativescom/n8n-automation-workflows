@@ -1,0 +1,436 @@
+{
+  "name": "Monitor LINE activity and Gemini sentiment with Google Sheets for elderly care",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 👵 Elderly Care Monitor\n\nEnsure the safety of elderly family members living alone. This workflow monitors **LINE** messages to detect inactivity or distress signals using **Gemini (AI)**, and logs daily health updates to **Google Sheets**.\n\n## How it works\n1. **Monitor:** Listens for incoming LINE messages.\n   - *Includes a **Test Mode** to simulate \"Emergency\" or \"Health Report\" messages.*\n2. **Analyze:** Gemini analyzes the message sentiment (Positive/Negative/Emergency).\n3. **Alert:** \n   - If **Emergency** (e.g., \"I fell down\"): Sends an immediate alert.\n   - If **Inactive** (No message for 24h): Triggers a warning (Logic handled via Schedule).\n4. **Log:** Records the message and sentiment to Google Sheets.\n\n## Setup steps\n1. **Connect:** LINE Notify/Bot, Gemini, Google Sheets.\n2. **Config:** Open **\"Config\"** to set `ALERT_EMAIL` and `SHEET_ID`.\n3. **Test:** Set `TEST_MODE` to `true` to verify emergency alerts.",
+        "height": 340,
+        "width": 500,
+        "color": 3
+      },
+      "id": "sticky-main",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Alert Info.",
+        "height": 140,
+        "width": 240,
+        "color": 6
+      },
+      "id": "sticky-config",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 💬 Message Ingestion\nLINE or Mock Data.",
+        "height": 140,
+        "width": 840,
+        "color": 6
+      },
+      "id": "sticky-ingest",
+      "name": "Sticky Note - Ingest",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI Sentiment Analysis\nDetects distress.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "sticky-ai",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🚨 Safety Action\nLogs & Alerts.",
+        "height": 140,
+        "width": 560,
+        "color": 6
+      },
+      "id": "sticky-action",
+      "name": "Sticky Note - Action",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "conf_1",
+              "name": "ALERT_EMAIL",
+              "value": "family@example.com",
+              "type": "string"
+            },
+            {
+              "id": "conf_2",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "conf_3",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -360,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "path": "webhook",
+        "options": {}
+      },
+      "id": "line-trigger",
+      "name": "LINE Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        500
+      ],
+      "webhookId": "line-webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is_test",
+              "leftValue": "={{ $('Config').first().json.TEST_MODE }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-mode",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        380,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Mock Emergency Message\nreturn [{\n  json: {\n    message: \"I'm feeling dizzy and fell down.\",\n    user_id: \"mock_grandma_01\",\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "mock-message",
+      "name": "Mock Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Analyze the safety status of this message:\n\"{{ $json.message }}\"\n\nReturn JSON ONLY:\n{ \n  \"sentiment\": \"Positive\" | \"Negative\" | \"Emergency\",\n  \"summary\": \"Short summary\",\n  \"alert_needed\": true/false\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ],
+      "id": "gemini-analyze",
+      "name": "Gemini: Analyze",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "googlePalmApi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini JSON\nconst text = $input.first().json.content.parts[0].text;\nlet data = {};\ntry {\n  const jsonMatch = text.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) data = JSON.parse(jsonMatch[0]);\n  else data = { sentiment: \"Neutral\", alert_needed: false };\n} catch (e) {\n  data = { sentiment: \"Error\", alert_needed: false };\n}\n\n// Pass original message info\ndata.original_message = $('Mock Message').first() ? $('Mock Message').first().json.message : $('LINE Webhook').first().json.body.events[0].message.text;\n\nreturn { json: data };"
+      },
+      "id": "parse-json",
+      "name": "Parse Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is_emergency",
+              "leftValue": "={{ $json.alert_needed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "safety-check",
+      "name": "Is Emergency?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1580,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Config').first().json.ALERT_EMAIL }}",
+        "subject": "🚨 Emergency Alert: Elderly Monitor",
+        "emailType": "text",
+        "message": "=Alert: {{ $json.sentiment }}\nMessage: {{ $json.original_message }}\n\nPlease check on them immediately.",
+        "options": {}
+      },
+      "id": "send-alert",
+      "name": "Send Email Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1860,
+        200
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "gmailOAuth2Api",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "HealthLog"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "Message": "={{ $json.original_message }}",
+            "Status": "={{ $json.sentiment }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-sheet",
+      "name": "Log to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1860,
+        440
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LINE Webhook": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gemini: Analyze",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Message": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Analyze",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Analyze": {
+      "main": [
+        [
+          {
+            "node": "Parse Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Analysis": {
+      "main": [
+        [
+          {
+            "node": "Is Emergency?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Emergency?": {
+      "main": [
+        [
+          {
+            "node": "Send Email Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
