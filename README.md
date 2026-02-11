@@ -21,6 +21,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**07. AI Nightly Butler**](./07-ai-nightly-butler) | **Voice Journal.** Sorts voice notes into Diary, Tasks, and Health logs using AI, then sends a nightly summary. | Webhook, Gemini, Sheets, Gmail |
 | [**08. Lazy Chef**](./08-ai-recipe-generator) | **AI Recipe Gen.** Generates 3 recipe variations (Speed/Healthy/Creative) from leftovers and emails a visual menu. | Form, Gemini, Google Search, Sheets |
 | [**09. Smart Morning Guard**](./09-smart-morning-guard) | **AI Morning Alarm.** Checks weather & train delays at 5 AM. Wakes you up early only if Gemini detects an emergency. | OpenWeather, RSS, Gemini, Gmail |
+| [**10. Smart Developer Journal**](./10-smart-developer-journal) | **Auto Daily Report.** Aggregates GitHub commits & Slack messages, then AI writes your "Done/Doing/Blockers" report. | GitHub, Slack, Gemini |
 
 *(More workflows are currently under development. Target: 20+)*
 
