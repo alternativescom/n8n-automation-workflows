@@ -1,0 +1,521 @@
+{
+  "name": "AI Nightly Butler: Voice Journal",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🌙 AI Nightly Butler: Voice Journal\n\nSpeak your mind before bed, and let AI organize your life. This workflow accepts voice text (via **Webhook**), uses **Gemini** to categorize it into **Diary**, **Tasks**, and **Health**, logs everything to **Google Sheets**, and sends a comforting \"Goodnight\" email summary.\n\n## How it works\n1. **Input:** Receives text from a smart speaker (IFTTT/Siri) or Manual Test.\n   - *Includes a **Test Mode** to simulate a voice entry like \"Had a salad. Remind me to buy milk.\"*\n2. **Sort:** Gemini acts as a \"Sorting Hat,\" parsing the text into structured JSON (Diary/Tasks/Health).\n3. **Record:** Routes the data to 3 separate sheets in Google Sheets.\n4. **Briefing:** Sends a summary email with tomorrow's tasks.\n\n## Setup steps\n1. **Connect:** Gemini, Google Sheets, Gmail.\n2. **Config:** Open **\"Config\"** to set `SHEET_ID` and `USER_EMAIL`.\n3. **External:** Set up your voice app (Siri/IFTTT) to POST to the Webhook URL (Production).\n4. **Test:** Set `TEST_MODE` to `true` to verify logic instantly.",
+        "height": 360,
+        "width": 500,
+        "color": 3
+      },
+      "id": "sticky-main",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Email & Sheet.",
+        "height": 140,
+        "width": 240,
+        "color": 6
+      },
+      "id": "sticky-config",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🗣️ Voice Input\nWebhook or Mock.",
+        "height": 140,
+        "width": 700,
+        "color": 6
+      },
+      "id": "sticky-input",
+      "name": "Sticky Note - Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🎩 AI Sorting Hat\nCategorizes \"Brain Dump\".",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "sticky-ai",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        920,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📝 Database Recording\nLogs to separate sheets.",
+        "height": 340,
+        "width": 460,
+        "color": 6
+      },
+      "id": "sticky-db",
+      "name": "Sticky Note - DB",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🌙 Nightly Briefing\nSends summary email.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "sticky-email",
+      "name": "Sticky Note - Email",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1900,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "conf_1",
+              "name": "USER_EMAIL",
+              "value": "me@example.com",
+              "type": "string"
+            },
+            {
+              "id": "conf_2",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "conf_3",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -360,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "voice-journal",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook (Voice)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        400
+      ],
+      "webhookId": "voice-journal"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is_test",
+              "leftValue": "={{ $('Config').first().json.TEST_MODE }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-mode",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        220,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Mock Voice Input\nreturn [{\n  json: {\n    body: {\n      text: \"I had a great salad for lunch today. Reminder to buy milk and eggs tomorrow. I felt a bit tired in the afternoon so I took a nap.\"\n    }\n  }\n}];"
+      },
+      "id": "mock-voice",
+      "name": "Mock Voice",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Unify Inputs\n// Passes either Webhook text or Mock text\nconst items = $input.all();\nconst text = items[0].json.body ? items[0].json.body.text : \"No text input\";\nreturn [{ json: { text } }];"
+      },
+      "id": "normalize-input",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Personal Butler.\nCategorize this spoken text into Diary, Tasks, and Health logs.\n\n[Input Text]\n\"{{ $json.text }}\"\n\n[Instructions]\n- Diary: Summary of the day's events.\n- Tasks: List of actionable items found.\n- Health: Any mention of food, sleep, or physical feeling.\n\n[Output JSON ONLY]\n{ \n  \"diary\": \"...\", \n  \"tasks\": [\"task 1\", \"task 2\"], \n  \"health\": \"...\" \n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        960,
+        300
+      ],
+      "id": "gemini-sort",
+      "name": "Gemini: Sort & Categorize",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "googlePalmApi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini JSON\nconst text = $input.first().json.content.parts[0].text;\nlet data = {};\ntry {\n  const jsonMatch = text.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) data = JSON.parse(jsonMatch[0]);\n  else data = { diary: text, tasks: [], health: \"\" };\n} catch (e) {\n  data = { diary: text, tasks: [], health: \"\" };\n}\n\nreturn { json: data };"
+      },
+      "id": "parse-json",
+      "name": "Parse Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Journal"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "Entry": "={{ $json.diary }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "save-journal",
+      "name": "Save Journal",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        200
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Tasks"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "Task": "={{ $json.tasks.join(', ') }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "save-tasks",
+      "name": "Save Tasks",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        380
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Health"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "Log": "={{ $json.health }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "save-health",
+      "name": "Save Health Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        560
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Config').first().json.USER_EMAIL }}",
+        "subject": "🌙 Goodnight: Your Daily Summary",
+        "emailType": "text",
+        "message": "=Good evening,\n\nHere is your daily summary based on your voice log:\n\n📖 Diary:\n{{ $('Parse Response').first().json.diary }}\n\n✅ Tasks Added:\n{{ $('Parse Response').first().json.tasks.join('\\n- ') }}\n\n❤️ Health Note:\n{{ $('Parse Response').first().json.health }}\n\nSleep well!",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Send Summary Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1940,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "gmailOAuth2Api",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Voice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Webhook (Voice)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Voice": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook (Voice)": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Sort & Categorize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Sort & Categorize": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Save Journal",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Tasks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Health Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Journal": {
+      "main": [
+        [
+          {
+            "node": "Send Summary Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
