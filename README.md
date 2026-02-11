@@ -18,6 +18,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**04. Marketing Anomaly Detector**](./04-marketing-anomaly-detector) | **KPI Watchdog.** Cross-references GA4 traffic with Shopify sales to detect "High Traffic / Low CVR" anomalies. | GA4, Shopify, Slack |
 | [**05. Global Cart Recovery**](./05-global-cart-recovery) | **Multi-language CRO.** Detects abandoned carts, identifies the user's country, and sends AI-localized recovery emails. | Shopify, Gemini, GA4, Gmail |
 | [**06. Elderly Care Monitor**](./06-elderly-care-monitor) | **Health & Safety.** Monitors LINE activity and sentiment to detect distress signals from elderly family members. | LINE, Gemini, Google Sheets |
+| [**07. AI Nightly Butler**](./07-ai-nightly-butler) | **Voice Journal.** Sorts voice notes into Diary, Tasks, and Health logs using AI, then sends a nightly summary. | Webhook, Gemini, Sheets, Gmail |
 
 *(More workflows are currently under development. Target: 20+)*
 
