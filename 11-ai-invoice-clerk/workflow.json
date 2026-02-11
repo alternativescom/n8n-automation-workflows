@@ -1,0 +1,430 @@
+{
+  "name": "AI Invoice Clerk: Auto-Process Gmail Attachments",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🧾 AI Invoice Clerk\n\nStop typing data manually. This workflow monitors **Gmail** for invoices (PDF/Images), uses **Gemini (Vision)** to extract details (Vendor, Date, Amount), logs them to **Google Sheets**, and requests approval via **Slack**.\n\n## How it works\n1. **Trigger:** Receive email with \"Invoice\" label (or Manual Test).\n   - *Includes a **Test Mode** to simulate extracting data from a sample PDF.*\n2. **Extract:** Gemini analyzes the attachment visual/text and outputs structured JSON.\n3. **Log:** Saves the clean data to Google Sheets.\n4. **Notify:** Sends a structured message to Slack for review.\n\n## Setup steps\n1. **Connect:** Gmail, Google Sheets, Slack, Gemini.\n2. **Config:** Open **\"Config\"** to set Sheet ID and Slack Channel.\n3. **Test:** Set `TEST_MODE` to `true` to verify the logging logic.",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "id": "c00f7a32-3913-4496-9ee9-4511797cf866",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet IDs & Mode.",
+        "height": 140,
+        "color": 6
+      },
+      "id": "41be139e-f7d7-4c70-9619-d3938e9d5572",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📥 Input & Vision\nGmail (Real) or Mock Data.",
+        "height": 340,
+        "width": 760,
+        "color": 6
+      },
+      "id": "05e15754-e368-467d-8f2a-5d91a2d328ad",
+      "name": "Sticky Note - Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📊 Database Logging\nAuto-entry to Sheets.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "1220b777-a439-462f-aab3-23ebb7eedc34",
+      "name": "Sticky Note - DB",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        672,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 💬 Approval Request\nNotify team via Slack.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "22c5c816-c8b3-4f23-84c1-374c6eb2ce98",
+      "name": "Sticky Note - Notify",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ],
+          "q": "has:attachment filename:pdf subject:(invoice OR bill)"
+        }
+      },
+      "id": "669d53fa-acc8-4cc4-af94-4da1af219c67",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        144
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qVmR1ytFIlpRVwxW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "SLACK_CHANNEL",
+              "value": "general",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "5dd52a17-aea5-45be-a49d-ecddc1a30145",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        128
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "bb9ac1ab-c1f5-4be1-b76d-1ddc96076e4f",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "63803ecd-1f93-4efb-a223-ecc4b80c8438",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -112,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate Extracted Invoice Data\nreturn [{\n  json: {\n    vendor: \"Amazon Web Services\",\n    date: \"2026-02-10\",\n    amount: \"$120.50\",\n    invoice_id: \"INV-2026-001\",\n    summary: \"Monthly hosting fees for Feb 2026.\"\n  }\n}];"
+      },
+      "id": "baf1dbc4-8363-4401-9253-e6f26356e5f6",
+      "name": "Mock Extracted Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Extract the following details from the attached invoice image/PDF.\n\n[Required Fields]\n- Vendor Name\n- Invoice Date (YYYY-MM-DD)\n- Total Amount\n- Invoice ID\n- Short Summary (Item description)\n\n[Output JSON ONLY]\n{\n  \"vendor\": \"...\",\n  \"date\": \"...\",\n  \"amount\": \"...\",\n  \"invoice_id\": \"...\",\n  \"summary\": \"...\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        128,
+        208
+      ],
+      "id": "5de97095-0c67-4bb7-8830-e57208d973e3",
+      "name": "Gemini (Vision)",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare Data for DB\n// Merges Mock path and Real AI path\nconst mode = $('Config').first().json.TEST_MODE;\nlet data = {};\n\nif (mode === 'true') {\n  data = $('Mock Extracted Data').first().json;\n} else {\n  // Parse Gemini JSON\n  const text = $('Gemini (Vision)').first().json.content.parts[0].text;\n  try {\n    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n    data = JSON.parse(cleanText);\n  } catch (e) {\n    data = { vendor: \"Error\", date: \"\", amount: \"0\", summary: \"Parse Failed\" };\n  }\n}\n\nreturn { json: data };"
+      },
+      "id": "c6f42702-1f44-4fa5-84bc-93ea66652bd8",
+      "name": "Normalize Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Invoices"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Received": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "Vendor": "={{ $json.vendor }}",
+            "Date": "={{ $json.date }}",
+            "Amount": "={{ $json.amount }}",
+            "Invoice ID": "={{ $json.invoice_id }}",
+            "Summary": "={{ $json.summary }}",
+            "Status": "Pending"
+          }
+        },
+        "options": {}
+      },
+      "id": "55a5db49-a237-494b-a4a9-3f518f5621ea",
+      "name": "Save to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kETRjtRKedfCcNUZ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "text": "=🧾 **New Invoice Received**\n\n* **Vendor:** {{ $json.vendor }}\n* **Amount:** {{ $json.amount }}\n* **Date:** {{ $json.date }}\n* **Summary:** {{ $json.summary }}\n\nPlease check Google Sheets for details.",
+        "otherOptions": {}
+      },
+      "id": "eeb53c6f-cbed-425c-945b-6c3eb6b661b2",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1200,
+        112
+      ],
+      "webhookId": "003447b4-ed00-43e6-ae0f-c76d9430aeac",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LTRX0YYlkPgvNCGu",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Extracted Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Extracted Data": {
+      "main": [
+        [
+          {
+            "node": "Normalize Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (Vision)": {
+      "main": [
+        [
+          {
+            "node": "Normalize Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Data": {
+      "main": [
+        [
+          {
+            "node": "Save to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Sheets": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "e98028e1-0d56-4e7e-a842-07d7ccf5cde6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "lqD2jvDfeOO59WGO",
+  "tags": []
+}
