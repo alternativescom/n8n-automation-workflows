@@ -46,6 +46,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 ## 👤 Author
 
 **Alternatives.com**
+https://alternativecomputers.org/
 - Focusing on AI automation and practical business workflows.
 - Open for collaboration and feedback.
 
