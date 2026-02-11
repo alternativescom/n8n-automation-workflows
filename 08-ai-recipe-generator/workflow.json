@@ -1,0 +1,551 @@
+{
+  "name": "Generate three recipes using AI for quick meal options",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🍳 Lazy Chef: AI Recipe Generator\n\nTurn fridge leftovers into a feast. This workflow accepts ingredients (via **Form**), uses **Gemini** to generate 3 distinct recipe styles (Speed, Healthy, Creative), fetches images via **Google Search**, saves them to **Sheets**, and emails you a menu.\n\n## How it works\n1. **Input:** Submit ingredients via n8n Form or use Test Mode.\n   - *Includes a **Test Mode** to simulate \"Eggs, Milk, Tomato\" input.*\n2. **Generate:** Gemini creates 3 recipes based on your mood and ingredients.\n3. **Visuals:** Searches Google Images for a matching photo for each dish.\n4. **Deliver:** Aggregates everything into a beautiful HTML email.\n\n## Setup steps\n1. **Connect:** Gemini, Google Custom Search, Sheets, Gmail.\n2. **Config:** Open **\"Config\"** to set API Keys and Sheet ID.\n3. **Test:** Set `TEST_MODE` to `true` to generate mock recipes instantly.",
+        "height": 360,
+        "width": 500,
+        "color": 3
+      },
+      "id": "sticky-main",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet APIs & IDs.",
+        "height": 140,
+        "width": 240,
+        "color": 6
+      },
+      "id": "sticky-config",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🥕 Ingredient Input\nForm or Mock Data.",
+        "height": 140,
+        "width": 700,
+        "color": 6
+      },
+      "id": "sticky-input",
+      "name": "Sticky Note - Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 👨‍🍳 AI Chef\nGenerates 3 variations.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "sticky-ai",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        920,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🖼️ Visuals & DB\nFetches images & Logs.",
+        "height": 340,
+        "width": 500,
+        "color": 6
+      },
+      "id": "sticky-visuals",
+      "name": "Sticky Note - Visuals",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📧 Menu Delivery\nSends HTML email.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "sticky-email",
+      "name": "Sticky Note - Email",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1940,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "sheetId",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "googleSearchApiKey",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "googleSearchEngineId",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "USER_EMAIL",
+              "value": "me@example.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -360,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "🍳 Lazy Chef - Recipe Generator",
+        "formDescription": "Enter your fridge leftovers.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Ingredients",
+              "placeholder": "e.g., Eggs, Milk, Leftover Rice",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Current Mood",
+              "defaultValue": "Hungry!",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Your Email",
+              "fieldType": "email",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Generate Recipes"
+        }
+      },
+      "id": "form-trigger",
+      "name": "Ingredient Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        220,
+        400
+      ],
+      "webhookId": "lazy-chef-webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is_test",
+              "leftValue": "={{ $('Config').first().json.TEST_MODE }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-mode",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        220,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Mock Input\nreturn [{\n  json: {\n    Ingredients: \"Eggs, Milk, Tomato, Old Bread\",\n    \"Current Mood\": \"Need energy\",\n    \"Your Email\": \"test@example.com\"\n  }\n}];"
+      },
+      "id": "mock-input",
+      "name": "Mock Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Unify Inputs\nconst items = $input.all();\nconst inputData = items[0].json;\n\nreturn [{\n  json: {\n    Ingredients: inputData.Ingredients || \"Unknown\",\n    Mood: inputData['Current Mood'] || \"Normal\",\n    Email: inputData['Your Email'] || $('Config').first().json.USER_EMAIL\n  }\n}];"
+      },
+      "id": "normalize-input",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a master chef.\nGenerate 3 distinct recipe styles based on ingredients: {{ $json.Ingredients }}\n\n1. Speed (5 min)\n2. Healthy (Low cal)\n3. Creative (Unexpected)\n\n[Output JSON Array ONLY]\n[\n  { \"style\": \"Speed\", \"recipe_name\": \"...\", \"search_query\": \"Dish Name\", \"recipe_text\": \"...\" },\n  ...\n]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        960,
+        300
+      ],
+      "id": "gemini-generate",
+      "name": "Gemini: Generate Recipes",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "googlePalmApi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini output\nconst text = $input.first().json.content.parts[0].text;\nlet recipes = [];\ntry {\n  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  recipes = JSON.parse(cleanText);\n} catch (e) {\n  recipes = [{ style: \"Error\", recipe_name: \"Failed\", search_query: \"Food\", recipe_text: \"Error\" }];\n}\nreturn recipes;"
+      },
+      "id": "split-items",
+      "name": "Split into Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.search_query }}"
+            },
+            {
+              "name": "cx",
+              "value": "={{ $('Config').first().json.googleSearchEngineId }}"
+            },
+            {
+              "name": "key",
+              "value": "={{ $('Config').first().json.googleSearchApiKey }}"
+            },
+            {
+              "name": "searchType",
+              "value": "image"
+            },
+            {
+              "name": "num",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "image-search",
+      "name": "Google Image Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.sheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Recipes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "style": "={{ $json.style }}",
+            "recipe_name": "={{ $json.recipe_name }}",
+            "image_url": "={{ $('Google Image Search').item.json.items[0].link }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "save-sheet",
+      "name": "Save to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1660,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate to HTML\nconst items = $input.all();\nlet html = \"<h2>🍳 Your 3 Recipe Proposals</h2><hr>\";\nitems.forEach(item => {\n  const d = item.json;\n  const img = $('Google Image Search').item.json.items[0].link || \"\";\n  html += `<h3>${d.style}: ${d.recipe_name}</h3><img src='${img}' width='200'><p>${d.recipe_text}</p>`;\n});\nreturn { json: { emailBody: html, recipient: $('Normalize Input').first().json.Email } };"
+      },
+      "id": "aggregate-html",
+      "name": "Aggregate to HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.recipient }}",
+        "subject": "🍳 Your AI Recipe Menu",
+        "emailType": "text",
+        "message": "={{ $json.emailBody }}",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2000,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "gmailOAuth2Api",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ingredient Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Input": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ingredient Form": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Generate Recipes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Generate Recipes": {
+      "main": [
+        [
+          {
+            "node": "Split into Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split into Items": {
+      "main": [
+        [
+          {
+            "node": "Google Image Search",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Image Search": {
+      "main": [
+        [
+          {
+            "node": "Save to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Sheets": {
+      "main": [
+        [
+          {
+            "node": "Aggregate to HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate to HTML": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
