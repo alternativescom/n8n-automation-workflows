@@ -32,3 +32,7 @@ This workflow was designed to monitor daily communications via **LINE**. It uses
 - n8n v1.x or later
 - LINE Account (Messaging API)
 - Google Gemini API Key
+
+## 📖 Tutorial / Article
+I wrote a detailed tutorial (in Japanese) about how I built this workflow:
+[**【n8n】高齢者の「LINE安否確認」をGeminiで自動化するワークフローを作ってみた**](https://zenn.dev/webook/articles/489df689735209)
