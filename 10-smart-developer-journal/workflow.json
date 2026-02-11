@@ -1,0 +1,459 @@
+{
+  "name": "Smart Developer Journal: GitHub & Slack to Daily Report",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 👨‍💻 Smart Developer Journal\n\nAutomate your daily stand-up/report. This workflow aggregates your **GitHub Commits** and **Slack Messages** from the day, uses **Gemini** to summarize your progress and blockers, and drafts a formatted report.\n\n## How it works\n1. **Trigger:** Runs daily at 18:00 (or Manual Test).\n   - *Includes a **Test Mode** to simulate \"Fixed bug #123\" and \"Deployed v2.0\".*\n2. **Fetch:** Gets today's commits from a repo and your messages from a Slack channel.\n3. **Summarize:** Gemini digests the technical details into a clean \"Done / Doing / Blockers\" format.\n4. **Draft:** Sends the generated report to **Slack** (as a draft/DM) or **Notion**.\n\n## Setup steps\n1. **Connect:** GitHub, Slack, Gemini.\n2. **Config:** Open **\"Config\"** to set Repo Owner/Name and Slack Channel.\n3. **Test:** Set `TEST_MODE` to `true` to generate a mock report instantly.",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "id": "sticky-main",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Repo & User Info.",
+        "height": 140,
+        "width": 240,
+        "color": 6
+      },
+      "id": "sticky-config",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📥 Activity Aggregation\nGitHub & Slack or Mock Data.",
+        "height": 340,
+        "width": 760,
+        "color": 6
+      },
+      "id": "sticky-data",
+      "name": "Sticky Note - Data",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI Summarization\nGenerates \"Done/Doing/Blocked\".",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "sticky-ai",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📝 Report Delivery\nPosts to Slack/Notion.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "sticky-deliver",
+      "name": "Sticky Note - Deliver",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1480,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Daily Report (18:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -600,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "GITHUB_OWNER",
+              "value": "n8n-io",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "GITHUB_REPO",
+              "value": "n8n",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "SLACK_CHANNEL",
+              "value": "general",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -360,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is_test",
+              "leftValue": "={{ $('Config').first().json.TEST_MODE }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-mode",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Mock Activity Data\nreturn [{\n  json: {\n    commits: [\n      \"feat: Added new login screen component\",\n      \"fix: Resolved API timeout issue on user fetch\",\n      \"chore: Updated dependencies\"\n    ],\n    messages: [\n      \"Discussed UI design with Sarah\",\n      \"Investigating database latency in prod\"\n    ]\n  }\n}];"
+      },
+      "id": "mock-data",
+      "name": "Mock Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "repository",
+        "operation": "getCommits",
+        "owner": "={{ $('Config').first().json.GITHUB_OWNER }}",
+        "repository": "={{ $('Config').first().json.GITHUB_REPO }}",
+        "options": {
+          "since": "={{ $today.format('yyyy-MM-dd') }}T00:00:00Z"
+        }
+      },
+      "id": "get-commits",
+      "name": "Get GitHub Commits",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        460,
+        400
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubApi",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "channel",
+        "operation": "history",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.SLACK_CHANNEL }}",
+          "mode": "id"
+        },
+        "limit": 20,
+        "filters": {}
+      },
+      "id": "get-slack",
+      "name": "Get Slack Msgs",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        640,
+        400
+      ],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "slackOAuth2Api",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare Context for AI\nconst mode = $('Config').first().json.TEST_MODE;\n\nif (mode === 'true') {\n  const data = $('Mock Data').first().json;\n  return [{ json: { \n    activity_log: `Commits:\\n${data.commits.join('\\n')}\\n\\nChat:\\n${data.messages.join('\\n')}` \n  } }];\n}\n\n// Process Real Data\n// Safely handle empty results\nconst commits = $('Get GitHub Commits').all().map(i => i.json.commit.message).join('\\n') || \"No commits today.\";\nconst chats = $('Get Slack Msgs').all().map(i => i.json.text).join('\\n') || \"No chat activity.\";\n\nreturn [{ json: { activity_log: `Commits:\\n${commits}\\n\\nChat:\\n${chats}` } }];"
+      },
+      "id": "prepare-context",
+      "name": "Prepare Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Tech Lead.\nSummarize my daily activity into a structured report.\n\n[Activity Log]\n{{ $json.activity_log }}\n\n[Output Format]\n- **Done:** (List completed tasks)\n- **Doing:** (List ongoing work)\n- **Blockers:** (Any issues found)\n- **Tomorrow:** (Suggested next steps)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        300
+      ],
+      "id": "gemini-summarize",
+      "name": "Gemini: Summarize",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "googlePalmApi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini Output\nconst text = $input.first().json.content.parts[0].text;\nreturn { json: { report: text } };"
+      },
+      "id": "parse-report",
+      "name": "Parse Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.SLACK_CHANNEL }}",
+          "mode": "id"
+        },
+        "text": "=📝 **Daily Developer Report**\n\n{{ $json.report }}",
+        "otherOptions": {}
+      },
+      "id": "send-slack",
+      "name": "Send to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1520,
+        300
+      ],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "slackOAuth2Api",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Report (18:00)": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get GitHub Commits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Data": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get GitHub Commits": {
+      "main": [
+        [
+          {
+            "node": "Get Slack Msgs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Slack Msgs": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Context": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Summarize": {
+      "main": [
+        [
+          {
+            "node": "Parse Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Report": {
+      "main": [
+        [
+          {
+            "node": "Send to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
