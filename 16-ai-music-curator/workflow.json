@@ -1,0 +1,404 @@
+{
+  "name": "AI Music Curator: Discover New Favorites",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🎸 AI Music Curator\n\nDiscover new music based on your favorites. Enter an artist name (e.g., \"Led Zeppelin\"), and **Gemini** will recommend 3 similar artists/bands with song suggestions and YouTube links.\n\n## How it works\n1. **Input:** Enter an artist name via **Form** (or use Test Mode).\n   - *Test Mode simulates: \"Led Zeppelin\".*\n2. **Curate:** Gemini analyzes the musical style and suggests 3 related artists (modern or classic).\n3. **Log:** Saves the recommendations to **Google Sheets**.\n\n## Setup steps\n1. **Connect:** Gemini, Sheets.\n2. **Config:** Open **\"Config\"** to set Sheet ID.\n3. **Test:** Set `TEST_MODE` to `true`.",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "id": "6d6eed6e-0e78-46c6-b8f6-b03bea0f2714",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Sheet ID.",
+        "height": 140,
+        "color": 6
+      },
+      "id": "11ccfcbd-51d4-4984-8c4b-096ec078c64b",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🎧 Artist Input\nForm or Mock.",
+        "height": 340,
+        "width": 760,
+        "color": 6
+      },
+      "id": "74a1b36b-8f49-4e14-b1fd-586931c53dcc",
+      "name": "Sticky Note - Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI DJ\nCurates Playlist.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "fcb84365-4a01-4a01-ad9a-f79099e5dbde",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        656,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🎼 Playlist Log\nLogs to Sheets.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "e49fc97b-c9f4-4ff0-8934-07054ac32d20",
+      "name": "Sticky Note - DB",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "dc44cde4-ba68-42c1-b813-b9be9685aac2",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -368,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "🎸 AI Music Curator",
+        "formDescription": "Enter a band/artist you love to get recommendations.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Favorite Artist",
+              "placeholder": "e.g., Led Zeppelin, Daft Punk",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2cc6f231-f21c-4299-8ca2-233c05919756",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -544,
+        112
+      ],
+      "webhookId": "music-curator"
+    },
+    {
+      "parameters": {},
+      "id": "ac3c962d-7a6e-428c-b348-9b29d8bc05c9",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "37898bf0-add5-4666-9380-d0063a1a0e3b",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -128,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate User Input\nreturn [{\n  json: {\n    artist: \"Led Zeppelin\"\n  }\n}];"
+      },
+      "id": "2b5eefa4-e84c-458a-ba4b-1b228e419604",
+      "name": "Mock Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Inputs\nconst mode = $('Config').first().json.TEST_MODE;\nlet artist = \"\";\n\nif (mode === 'true') {\n  artist = $('Mock Input').first().json.artist;\n} else {\n  artist = $('Form Trigger').first().json['Favorite Artist'];\n}\nreturn { json: { artist } };"
+      },
+      "id": "5b372668-d86b-40f9-b939-f25ccfd8d7be",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Music Critic / DJ.\nSuggest 3 bands/artists similar to the user's input. Focus on \"Hidden Gems\" or \"Modern Successors\".\n\n[Input Artist]\n{{ $json.artist }}\n\n[Output JSON ONLY]\n{\n  \"input_artist\": \"{{ $json.artist }}\",\n  \"recommendations\": [\n    { \"name\": \"Band A\", \"reason\": \"Why similar?\", \"song\": \"Best Song\", \"youtube_query\": \"Band A Best Song\" },\n    { \"name\": \"Band B\", \"reason\": \"Why similar?\", \"song\": \"Best Song\", \"youtube_query\": \"Band B Best Song\" },\n    { \"name\": \"Band C\", \"reason\": \"Why similar?\", \"song\": \"Best Song\", \"youtube_query\": \"Band C Best Song\" }\n  ]\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        672,
+        112
+      ],
+      "id": "91eef88c-41aa-43cd-bf0e-f080b73eebcc",
+      "name": "Gemini: Curate",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini Output\nconst text = $input.first().json.content.parts[0].text;\nlet data = {};\ntry {\n  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  data = JSON.parse(cleanText);\n} catch (e) {\n  data = { input_artist: \"Error\", recommendations: [] };\n}\n\n// Generate YouTube Links\nconst recs = data.recommendations.map(rec => ({\n  ...rec,\n  link: `https://www.youtube.com/results?search_query=${encodeURIComponent(rec.youtube_query)}`\n}));\n\nreturn { json: { input_artist: data.input_artist, recommendations: recs } };"
+      },
+      "id": "cbcb6749-8688-4aa6-a7af-95d9139fe6d4",
+      "name": "Parse & Link",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "MusicLog"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.format('yyyy-MM-dd') }}",
+            "Input Artist": "={{ $json.input_artist }}",
+            "Rec 1": "={{ $json.recommendations[0].name }} ({{ $json.recommendations[0].song }})",
+            "Rec 1 Link": "={{ $json.recommendations[0].link }}",
+            "Rec 2": "={{ $json.recommendations[1].name }} ({{ $json.recommendations[1].song }})",
+            "Rec 2 Link": "={{ $json.recommendations[1].link }}",
+            "Rec 3": "={{ $json.recommendations[2].name }} ({{ $json.recommendations[2].song }})",
+            "Rec 3 Link": "={{ $json.recommendations[2].link }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "f7c656d1-a31c-4495-8531-2e6a5a4d2c6a",
+      "name": "Save to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kETRjtRKedfCcNUZ",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Input": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Curate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Curate": {
+      "main": [
+        [
+          {
+            "node": "Parse & Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Link": {
+      "main": [
+        [
+          {
+            "node": "Save to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "4a936cb5-9afb-4931-8ef8-0398aeebc48d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "iXsw4Av6W3vGK5jX",
+  "tags": []
+}
