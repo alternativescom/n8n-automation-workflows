@@ -24,6 +24,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**10. Smart Developer Journal**](./10-smart-developer-journal) | **Auto Daily Report.** Aggregates GitHub commits & Slack messages, then AI writes your "Done/Doing/Blockers" report. | GitHub, Slack, Gemini |
 | [**11. AI Invoice Clerk**](./11-ai-invoice-clerk) | **Accounting Auto.** Monitors Gmail for invoices, uses Gemini Vision to extract data (Amount/Vendor), and logs to Sheets. | Gmail, Gemini Vision, Sheets, Slack |
 | [**12. Smart Tax Accountant**](./12-smart-tax-accountant) | **Tax Return Helper.** Upload receipt images via Form. AI extracts data and auto-categorizes expenses (Japanese Tax Titles). | Form, Gemini Vision, Sheets |
+| [**13. Smart Lead Scraper**](./13-smart-lead-scraper) | **Sales Automation.** Input a keyword (e.g. "AI Startups"), scrapes Google Search, and AI builds a company list in Sheets. | Google Search, Gemini, Sheets, Form |
 
 *(More workflows are currently under development. Target: 20+)*
 
