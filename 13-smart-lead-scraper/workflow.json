@@ -1,0 +1,458 @@
+{
+  "name": "Smart Lead Scraper: Keyword to Sales List",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🕵️ Smart Lead Scraper\n\nBuild your sales list automatically. Enter a keyword (e.g., \"AI Startups in Tokyo\"), and this workflow will **Search Google**, analyze the results with **Gemini**, and save a structured company list to **Google Sheets**.\n\n## How it works\n1. **Input:** Enter a keyword via **Form** (or use Test Mode).\n   - *Includes a **Test Mode** to simulate a search for \"SaaS Marketing Agencies\".*\n2. **Search:** Google Custom Search fetches the top 10 results (Titles, Snippets, Links).\n3. **Analyze:** Gemini filters the results to find valid companies and extracts Name, Description, and URL.\n4. **List:** Saves the clean list to **Google Sheets**.\n\n## Setup steps\n1. **Connect:** Google Custom Search, Gemini, Sheets.\n2. **Config:** Open **\"Config\"** to set Sheet ID.\n3. **Test:** Set `TEST_MODE` to `true` to generate a mock list instantly.",
+        "height": 396,
+        "width": 500,
+        "color": 3
+      },
+      "id": "6e4b7c86-57e5-4b82-a2d3-e6c057fcd5f7",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Sheet ID & Mode.",
+        "height": 140,
+        "color": 6
+      },
+      "id": "b26add0c-4483-405a-9af2-1bb34f31aa88",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🔍 Search & Research\nGoogle API or Mock.",
+        "height": 340,
+        "width": 760,
+        "color": 6
+      },
+      "id": "fed732fb-f72a-4cf4-9d2d-3c3f96da9839",
+      "name": "Sticky Note - Search",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI Analyst\nFilters & Formats.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "47de9461-39a3-4244-960a-badad2354f81",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        544,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📋 Sales List\nLogs to Sheets.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "d163dc0c-bb39-4e23-a387-9a2a262eaef4",
+      "name": "Sticky Note - DB",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "SEARCH_ENGINE_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "GOOGLE_API_KEY",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "5c9fbf36-69cb-441c-8b91-9568e2e4b6a8",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -464,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "🕵️ Smart Lead Scraper",
+        "formDescription": "Enter a keyword to generate a company list.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Keyword",
+              "placeholder": "e.g., AI Startups Tokyo",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ba3755af-c408-4ed8-83e4-79ab3278bb71",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -688,
+        128
+      ],
+      "webhookId": "lead-scraper"
+    },
+    {
+      "parameters": {},
+      "id": "accbefbd-655c-49a8-98eb-024e9acd2f27",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c19e4d03-2300-4af1-85c1-c0444e60d20d",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -240,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate Google Search Results\nreturn [{\n  json: {\n    items: [\n      { title: \"Acme Corp - AI Marketing\", snippet: \"Leading AI marketing solutions for enterprise.\", link: \"https://example.com/acme\" },\n      { title: \"Beta Ltd - Cloud Analytics\", snippet: \"Cloud data analytics platform.\", link: \"https://example.com/beta\" },\n      { title: \"Gamma Inc - CRM Tool\", snippet: \"Next-gen CRM for small business.\", link: \"https://example.com/gamma\" }\n    ]\n  }\n}];"
+      },
+      "id": "34df18c9-3b0a-4fc5-a314-be7d0c1ccb1c",
+      "name": "Mock Search Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $('Form Trigger').first().json.Keyword }}"
+            },
+            {
+              "name": "cx",
+              "value": "={{ $('Config').first().json.SEARCH_ENGINE_ID }}"
+            },
+            {
+              "name": "key",
+              "value": "={{ $('Config').first().json.GOOGLE_API_KEY }}"
+            },
+            {
+              "name": "num",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3e8cd7f9-4f60-47e2-8e42-b52c0bd9589f",
+      "name": "Google Search API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare Context for AI\n// Merges Mock and Real Search Data\nconst mode = $('Config').first().json.TEST_MODE;\nlet searchResults = [];\n\nif (mode === 'true') {\n  searchResults = $('Mock Search Results').first().json.items;\n} else {\n  searchResults = $('Google Search API').first().json.items || [];\n}\n\n// Format as text block\nconst context = searchResults.map(item => \n  `Title: ${item.title}\\nSnippet: ${item.snippet}\\nLink: ${item.link}`\n).join('\\n---\\n');\n\nreturn { json: { search_context: context } };"
+      },
+      "id": "e9c2e998-2e8d-43d0-8daa-5307cc1f05ed",
+      "name": "Prepare Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Sales Researcher.\nAnalyze the search results and extract valid companies.\n\n[Instructions]\n- Filter out generic articles, job boards, or irrelevant sites.\n- Extract Company Name, Description (1 sentence), and URL.\n- Return a JSON Array.\n\n[Search Results]\n{{ $json.search_context }}\n\n[Output JSON ONLY]\n[\n  { \"name\": \"Company A\", \"description\": \"...\", \"url\": \"...\" },\n  ...\n]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        592,
+        112
+      ],
+      "id": "d15f1970-7198-44a8-8bad-06d6ea15ec76",
+      "name": "Gemini: Filter & List",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini JSON Array\nconst text = $input.first().json.content.parts[0].text;\nlet companies = [];\n\ntry {\n  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  companies = JSON.parse(cleanText);\n} catch (e) {\n  companies = [{ name: \"Error\", description: \"Parse failed\", url: \"\" }];\n}\n\nreturn companies;"
+      },
+      "id": "223a1a83-f2b7-48ef-aef5-963085068b60",
+      "name": "Split Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "LeadList"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company": "={{ $json.name }}",
+            "Description": "={{ $json.description }}",
+            "URL": "={{ $json.url }}",
+            "Added At": "={{ $now.format('yyyy-MM-dd HH:mm') }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "b5a155dc-918d-4bd1-b6dc-262621a2a7b2",
+      "name": "Save to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kETRjtRKedfCcNUZ",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Search Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Search Results": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Search API": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Context": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Filter & List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Filter & List": {
+      "main": [
+        [
+          {
+            "node": "Split Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Items": {
+      "main": [
+        [
+          {
+            "node": "Save to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "c7374a7a-9013-406d-a6f1-56343495af95",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "EtnJFWXdL7FkWrIn",
+  "tags": []
+}
