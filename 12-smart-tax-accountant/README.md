@@ -29,3 +29,7 @@ This workflow is a lifesaver for freelancers and small business owners during ta
 - n8n v1.x or later
 - Google Gemini API Key
 - Google Sheets
+
+## 📖 Tutorial / Article
+I wrote a detailed tutorial (in Japanese) about how I built this workflow for tax return automation:
+[**【n8n】確定申告の「レシート入力」を全自動化。スマホで撮るだけで勘定科目までAIが仕訳するワークフロー**](https://zenn.dev/webook/articles/6e02b5f8478391)
