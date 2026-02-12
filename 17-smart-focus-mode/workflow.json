@@ -1,0 +1,559 @@
+{
+  "name": "Smart Focus Mode: Calendar Guard & AI Journaling",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🧠 Smart Focus Guardian\n\n**Why this is advanced:**\nUnlike basic timers, this workflow **checks your schedule first**. It prevents you from missing meetings by blocking Focus Mode if a calendar event overlaps.\n\n**How it works**\n1. **Guard:** Checks **Google Calendar** for conflicts in the next X minutes.\n   - **⚠️ Conflict:** Aborts and warns via **Slack**.\n   - **✅ Clear:** Activates Focus Mode (DND, TimeBlock).\n2. **Enrich:** **Gemini** analyzes your task and tags it with a category (e.g., \"Creative Work\").\n3. **Log:** Saves the session with AI tags to **Google Sheets**.\n4. **Vibe:** Starts **Spotify** playlist (optional).\n\n**Setup steps**\n1. **Credentials:** Connect Slack, Google Calendar, Spotify, Gemini, Sheets.\n2. **Config:** Open **\"Config\"** to set IDs.",
+        "height": 420,
+        "width": 500,
+        "color": 3
+      },
+      "id": "7dc321af-1da7-47eb-b51a-0a1b1a520829",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Sheet ID, Slack ID, Calendar ID.",
+        "width": 300,
+        "color": 4
+      },
+      "id": "beb6a3ac-8c0c-4951-aa9e-f784ddd81379",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🛡️ Calendar Guard\nChecks for existing meetings before starting.\n*Adds logic complexity.*",
+        "width": 640,
+        "color": 4
+      },
+      "id": "153f78a8-e498-4013-a9dc-60b9fb07ebfb",
+      "name": "Sticky Note - Guard",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🚀 Activation & AI\nSets environment and uses AI to categorize the task.",
+        "width": 840,
+        "color": 4
+      },
+      "id": "18279102-9317-453e-8b19-89f12702a498",
+      "name": "Sticky Note - Action",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        320,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "smart-focus",
+        "options": {}
+      },
+      "id": "5eaaeb55-80dc-4363-b5ef-c49941a085ed",
+      "name": "Start Focus (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        176
+      ],
+      "webhookId": "smart-focus-trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "conf_1",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "conf_2",
+              "name": "SLACK_USER_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "conf_3",
+              "name": "CALENDAR_ID",
+              "value": "primary",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "6771664a-ed8b-457a-ba1d-6ceadec50ede",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -816,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Time Calc for Logic\n// Handle Webhook or Manual Input\nconst body = $input.all()[0].json.body || {};\nconst duration = body.duration || 25;\nconst task = body.task || \"Deep Work (Test)\";\n\nconst now = new Date();\nconst endTime = new Date(now.getTime() + duration * 60000);\n\nreturn {\n  json: {\n    duration,\n    task,\n    startTime: now.toISOString(),\n    endTime: endTime.toISOString(),\n    today: now.toISOString().split('T')[0]\n  }\n};"
+      },
+      "id": "3252a7ae-3bf6-4a3a-9a39-66e2aac298ce",
+      "name": "Calc Time",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.CALENDAR_ID }}"
+        },
+        "returnAll": true,
+        "options": {
+          "timeMin": "={{ $json.startTime }}",
+          "timeMax": "={{ $json.endTime }}",
+          "singleEvents": true
+        }
+      },
+      "id": "7da66947-2144-4414-bba9-e066de710e5f",
+      "name": "Check Conflicts",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        176
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "lQ9Szn7BArgwoMdg",
+          "name": "Google Calendar account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has_conflict",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c9a4d60a-fd8b-41df-aafd-db4b7dc0867c",
+      "name": "Conflict Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "list",
+          "value": "={{ $('Config').first().json.SLACK_USER_ID }}"
+        },
+        "text": "=⚠️ **Focus Mode Aborted**\n\nYou have a meeting coming up: \"{{ $('Check Conflicts').first().json.summary }}\".\nPlease reschedule your focus session.",
+        "otherOptions": {}
+      },
+      "id": "354174d4-d8a5-4805-99d8-f5fe024b3074",
+      "name": "Warn Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        208,
+        64
+      ],
+      "webhookId": "7c4c6c9c-10cc-4fc6-b0da-8be1eaadee82",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LTRX0YYlkPgvNCGu",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "setDoNotDisturb"
+      },
+      "id": "f3ad0592-fe27-4b7b-b114-f507619799ad",
+      "name": "Slack DND On",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        256,
+        192
+      ],
+      "webhookId": "38cb4114-89e9-45ce-b097-f29c1b9a0691",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LTRX0YYlkPgvNCGu",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Categorize this task: \"{{ $('Calc Time').first().json.task }}\"\nOptions: [Deep Work, Admin, Learning, Creative, Meeting]\nOutput JUST the category name."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        464,
+        192
+      ],
+      "id": "d0727ac8-8708-4fc5-ba07-41556a6f2851",
+      "name": "Gemini: Tag Task",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.CALENDAR_ID }}"
+        },
+        "start": "={{ $('Calc Time').first().json.startTime }}",
+        "end": "={{ $('Calc Time').first().json.endTime }}",
+        "additionalFields": {
+          "showMeAs": "busy"
+        }
+      },
+      "id": "901ce83f-8f08-4e66-b854-c3d41a4a087f",
+      "name": "Block Time",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.1,
+      "position": [
+        736,
+        192
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "lQ9Szn7BArgwoMdg",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "FocusLog"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $('Calc Time').first().json.today }}",
+            "Task": "={{ $('Calc Time').first().json.task }}",
+            "Category": "={{ $json.content.parts[0].text.trim() }}",
+            "Duration": "={{ $('Calc Time').first().json.duration }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "0312b503-1755-456f-896e-e11d68d48125",
+      "name": "Log to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        944,
+        192
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kETRjtRKedfCcNUZ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "start"
+      },
+      "id": "08642c68-f1cb-4e20-a67a-c17d5ac92746",
+      "name": "Start Music",
+      "type": "n8n-nodes-base.spotify",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        192
+      ],
+      "credentials": {
+        "spotifyOAuth2Api": {
+          "id": "yz7RVIWMwquRAXpY",
+          "name": "Spotify account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "id": "1c4c183c-b8b5-4284-8240-ceaed9fc75d7",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "31dc4654-d5f7-4884-88f8-14aa52ae7055",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -608,
+        176
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Calc Time": {
+      "main": [
+        [
+          {
+            "node": "Check Conflicts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Conflicts": {
+      "main": [
+        [
+          {
+            "node": "Conflict Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conflict Exists?": {
+      "main": [
+        [
+          {
+            "node": "Warn Slack",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack DND On",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack DND On": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Tag Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Tag Task": {
+      "main": [
+        [
+          {
+            "node": "Block Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Block Time": {
+      "main": [
+        [
+          {
+            "node": "Log to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Start Music",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Calc Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Focus (Webhook)": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "cfdcf914-9b32-40eb-8310-08e84c0514b8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "1CaBzFuvXMw2L6Do",
+  "tags": []
+}
