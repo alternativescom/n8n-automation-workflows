@@ -1,0 +1,418 @@
+{
+  "name": "AI Subsidy Hunter: Grant & Fund Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 💰 AI Subsidy Hunter\n\nNever miss a grant or subsidy opportunity. This workflow automatically searches for new funding info (e.g., \"Small Business Grant\"), uses **Gemini** to summarize eligibility and deadlines, and notifies you via **Slack**.\n\n## How it works\n1. **Trigger:** Runs daily via **Schedule** (or Manual/Test).\n   - *Test Mode simulates search results for \"IT Subsidy 2026\".*\n2. **Search:** Google Search API finds the latest pages matching your keywords.\n3. **Analyze:** Gemini filters for relevance and extracts Deadline & Max Amount.\n4. **Notify:** Sends a summarized report to **Slack**.\n\n## Setup steps\n1. **Connect:** Google Custom Search, Gemini, Slack.\n2. **Config:** Open **\"Config\"** to set Keywords & Slack Channel.\n3. **Test:** Set `TEST_MODE` to `true`.",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "id": "a9203f7d-ace3-4c7e-bae9-d117fb3028ff",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Keywords.",
+        "height": 140,
+        "color": 6
+      },
+      "id": "3cc2759e-da33-4011-8d08-4b53a2f904c0",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🔎 Search\nFinds new info.",
+        "height": 340,
+        "width": 760,
+        "color": 6
+      },
+      "id": "1b30c9c8-6913-4ab6-bc6c-a601bbc8d884",
+      "name": "Sticky Note - Search",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI Analyst\nSummarizes Grants.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "523d145b-bb9f-4606-9093-b339fa386a9c",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 💬 Notification\nSlack Report.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "62bb46b8-4935-45fa-b0f1-5acc206f13bf",
+      "name": "Sticky Note - Notify",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "KEYWORDS",
+              "value": "IT導入補助金 2026",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "SLACK_CHANNEL",
+              "value": "general",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "SEARCH_ENGINE_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "GOOGLE_API_KEY",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "736e0bee-43a3-42d8-8b60-6fe8a3c1a055",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "6df3f09e-2967-418c-a1df-f9bed1901358",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -688,
+        128
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "9cb4330b-12d0-4a3c-8d03-59ecef3b9b4f",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7799f93c-1d64-47f9-940e-c3bfb5e315e4",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -224,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate Search Results\nreturn [{\n  json: {\n    items: [\n      { title: \"IT Subsidy 2026 Guidelines\", snippet: \"New guidelines released. Max 4.5M JPY. Deadline: June 30.\", link: \"https://example.com/subsidy1\" },\n      { title: \"Small Business Support Fund\", snippet: \"Support for marketing expenses. Up to 500k JPY.\", link: \"https://example.com/subsidy2\" }\n    ]\n  }\n}];"
+      },
+      "id": "7314459b-53b7-4d6a-bd74-17f295550de7",
+      "name": "Mock Search Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $('Config').first().json.KEYWORDS }}"
+            },
+            {
+              "name": "cx",
+              "value": "={{ $('Config').first().json.SEARCH_ENGINE_ID }}"
+            },
+            {
+              "name": "key",
+              "value": "={{ $('Config').first().json.GOOGLE_API_KEY }}"
+            },
+            {
+              "name": "dateRestrict",
+              "value": "w1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0535ae06-8501-4226-9a32-e7a51ce2a937",
+      "name": "Google Search API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        16,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare Context for AI\nconst mode = $('Config').first().json.TEST_MODE;\nlet searchResults = [];\n\nif (mode === 'true') {\n  searchResults = $('Mock Search Results').first().json.items;\n} else {\n  searchResults = $('Google Search API').first().json.items || [];\n}\n\nif (searchResults.length === 0) {\n  return { json: { search_context: \"No new subsidies found.\" } };\n}\n\nconst context = searchResults.map(item => \n  `Title: ${item.title}\\nSnippet: ${item.snippet}\\nLink: ${item.link}`\n).join('\\n---\\n');\n\nreturn { json: { search_context: context } };"
+      },
+      "id": "c7df8684-8274-4a4e-a156-284937a974b3",
+      "name": "Prepare Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Grant Consultant.\nReview the search results and summarize promising subsidies.\n\n[Search Results]\n{{ $json.search_context }}\n\n[Instructions]\n- Ignore irrelevant news or ads.\n- For each valid subsidy, extract: Name, Amount (Max), Deadline, and One-line Summary.\n- Format as a clean Slack message (Bullet points).\n- If nothing relevant found, say \"No new updates this week.\"\n\n[Output Text]\n💰 **Weekly Subsidy Report**\n\n..."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        608,
+        112
+      ],
+      "id": "3f0d8b51-da6e-4564-b9c5-1c570d917465",
+      "name": "Gemini: Summarize",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "text": "={{ $json.content.parts[0].text }}",
+        "otherOptions": {}
+      },
+      "id": "53a20ae1-6327-45de-ae4d-72aea060a6ed",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1072,
+        112
+      ],
+      "webhookId": "714ac11b-01fb-49a5-83fe-c7740e304aef",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LTRX0YYlkPgvNCGu",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Search Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Search Results": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Search API": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Context": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Summarize": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "58d3fee0-4b8f-44f7-99e3-fbe4a67b3b78",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "DlcYC8yQuGxplNlf",
+  "tags": []
+}
