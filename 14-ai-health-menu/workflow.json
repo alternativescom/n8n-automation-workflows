@@ -1,0 +1,448 @@
+{
+  "name": "AI Health Menu: Personalized Meal Planner",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🥗 AI Health Menu\n\nCreate a personalized healthy meal plan. Input your ingredients and health goal (e.g., \"Low Blood Pressure\"), and **Gemini** will generate a day's menu with nutrition estimates.\n\n## How it works\n1. **Input:** Enter ingredients & health focus via **Form** (or use Test Mode).\n   - *Test Mode simulates: \"Tofu, Spinach\" for \"Low Blood Pressure\".*\n2. **Plan:** Gemini creates Breakfast, Lunch, and Dinner menus focused on your health goal.\n3. **Log:** Saves the menu to **Google Sheets**.\n4. **Deliver:** Emails the formatted menu to you.\n\n## Setup steps\n1. **Connect:** Gemini, Sheets, Gmail.\n2. **Config:** Open **\"Config\"** to set Sheet ID and Email.\n3. **Test:** Set `TEST_MODE` to `true`.",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "id": "a1e09904-cc57-45a3-8380-3993843f2e33",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Sheet & Email.",
+        "height": 140,
+        "color": 6
+      },
+      "id": "54fcfe1e-9a0a-4ade-8b4e-167b61dfcb84",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🥦 Dietary Input\nForm or Mock Data.",
+        "height": 340,
+        "width": 760,
+        "color": 6
+      },
+      "id": "35b0ef61-1358-4919-8a69-b25f5378d04b",
+      "name": "Sticky Note - Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 👨‍⚕️ AI Nutritionist\nGenerates Menu.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "2303ec25-e6ad-4332-9879-68dcb0706437",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        432,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📧 Delivery\nLog & Email.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "003dc0f7-0ddb-455c-bf78-0f31e397a950",
+      "name": "Sticky Note - Deliver",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        912,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "USER_EMAIL",
+              "value": "me@example.com",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "fb106692-1161-4006-931e-9e8daf40cf6f",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -528,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "🥗 AI Health Menu Planner",
+        "formDescription": "Enter ingredients and your health goal.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Ingredients",
+              "placeholder": "e.g., Tofu, Chicken, Broccoli",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Health Goal",
+              "defaultValue": "Low Blood Pressure (DASH Diet)",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8f6c76e6-2d47-41b7-91aa-c7cecb5b9dc0",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -736,
+        176
+      ],
+      "webhookId": "health-menu"
+    },
+    {
+      "parameters": {},
+      "id": "b0bf9088-c9e9-4210-aa1c-1438b0c8872c",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2e2aee77-9c32-4819-b446-872e76e59c20",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -352,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate Input Data\nreturn [{\n  json: {\n    ingredients: \"Tofu, Spinach, Carrots, Salmon\",\n    goal: \"Low Sodium / Lower Blood Pressure\"\n  }\n}];"
+      },
+      "id": "38ee98f5-8a56-444e-9d11-a0b29881fde1",
+      "name": "Mock Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Inputs\nconst mode = $('Config').first().json.TEST_MODE;\nlet data = {};\n\nif (mode === 'true') {\n  data = $('Mock Input').first().json;\n} else {\n  data = {\n    ingredients: $('Form Trigger').first().json.Ingredients,\n    goal: $('Form Trigger').first().json['Health Goal']\n  };\n}\nreturn { json: data };"
+      },
+      "id": "eec3b093-e18b-49cc-bf1d-8bdb834f5731",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Nutritionist.\nCreate a 1-day meal plan (Breakfast, Lunch, Dinner) based on the ingredients and health goal.\n\n[User Info]\nIngredients: {{ $json.ingredients }}\nGoal: {{ $json.goal }}\n\n[Output JSON ONLY]\n{\n  \"goal_summary\": \"...\",\n  \"menu\": [\n    { \"meal\": \"Breakfast\", \"name\": \"...\", \"calories\": \"...\", \"desc\": \"...\" },\n    { \"meal\": \"Lunch\", \"name\": \"...\", \"calories\": \"...\", \"desc\": \"...\" },\n    { \"meal\": \"Dinner\", \"name\": \"...\", \"calories\": \"...\", \"desc\": \"...\" }\n  ],\n  \"advice\": \"One sentence health advice.\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        400,
+        128
+      ],
+      "id": "2b0e1a63-4a24-45e2-9fee-ac172cec8a18",
+      "name": "Gemini: Plan Menu",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini Output\nconst text = $input.first().json.content.parts[0].text;\nlet result = {};\ntry {\n  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  result = JSON.parse(cleanText);\n} catch (e) {\n  result = { goal_summary: \"Error\", menu: [], advice: \"Parse failed.\" };\n}\nreturn { json: result };"
+      },
+      "id": "8d340df3-dda5-4887-bc08-d3803c839220",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "MealLog"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.format('yyyy-MM-dd') }}",
+            "Goal": "={{ $json.goal_summary }}",
+            "Breakfast": "={{ $json.menu[0].name }}",
+            "Lunch": "={{ $json.menu[1].name }}",
+            "Dinner": "={{ $json.menu[2].name }}",
+            "Advice": "={{ $json.advice }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "2402a1af-ece1-4ad0-9c03-e3071696aae6",
+      "name": "Save to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        128
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kETRjtRKedfCcNUZ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Config').first().json.USER_EMAIL }}",
+        "subject": "🥗 Your Healthy Menu Plan",
+        "emailType": "text",
+        "message": "=Here is your menu for {{ $json.goal_summary }}:\n\n🌅 Breakfast: {{ $json.menu[0].name }} ({{ $json.menu[0].calories }})\n{{ $json.menu[0].desc }}\n\n☀️ Lunch: {{ $json.menu[1].name }} ({{ $json.menu[1].calories }})\n{{ $json.menu[1].desc }}\n\n🌙 Dinner: {{ $json.menu[2].name }} ({{ $json.menu[2].calories }})\n{{ $json.menu[2].desc }}\n\n💡 Advice: {{ $json.advice }}",
+        "options": {}
+      },
+      "id": "b4eab3c0-1a42-4f52-bbae-0a9f71f1b025",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1152,
+        128
+      ],
+      "webhookId": "5d1c656b-8541-467f-a6a2-55564861301f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qVmR1ytFIlpRVwxW",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Input": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Plan Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Plan Menu": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Save to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Sheets": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "893f2d35-acd7-4db6-bafd-fa4603eb40f3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "xutAFKSKAU03tXJO",
+  "tags": []
+}
