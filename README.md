@@ -25,6 +25,10 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**11. AI Invoice Clerk**](./11-ai-invoice-clerk) | **Accounting Auto.** Monitors Gmail for invoices, uses Gemini Vision to extract data (Amount/Vendor), and logs to Sheets. | Gmail, Gemini Vision, Sheets, Slack |
 | [**12. Smart Tax Accountant**](./12-smart-tax-accountant) | **Tax Return Helper.** Upload receipt images via Form. AI extracts data and auto-categorizes expenses (Japanese Tax Titles). | Form, Gemini Vision, Sheets |
 | [**13. Smart Lead Scraper**](./13-smart-lead-scraper) | **Sales Automation.** Input a keyword (e.g. "AI Startups"), scrapes Google Search, and AI builds a company list in Sheets. | Google Search, Gemini, Sheets, Form |
+| [**14. AI Health Menu**](./14-ai-health-menu) | **Personalized Meal Planner.** Input ingredients & health goal (e.g., Low BP), AI generates a full day menu with nutrition advice. | Form, Gemini, Sheets, Gmail |
+| [**15. AI Subsidy Hunter**](./15-ai-subsidy-hunter) | **Grant Tracker.** Searches Google for new subsidies/grants, filters with AI, and notifies deadlines & amounts via Slack. | Google Search, Gemini, Slack |
+| [**16. AI Music Curator**](./16-ai-music-curator) | **Music Discovery.** Input a favorite artist, and AI suggests similar "hidden gems" with YouTube links based on musical style. | Gemini, YouTube, Sheets |
+| [**17. Smart Focus Mode**](./17-smart-focus-mode) | **Deep Work Manager.** Checks Calendar for conflicts before starting. Sets Slack DND, blocks time, logs to Sheets, and plays Spotify. | Calendar, Slack, Gemini, Spotify |
 
 *(More workflows are currently under development. Target: 20+)*
 
