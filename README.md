@@ -30,6 +30,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**16. AI Music Curator**](./16-ai-music-curator) | **Music Discovery.** Input a favorite artist, and AI suggests similar "hidden gems" with YouTube links based on musical style. | Gemini, YouTube, Sheets |
 | [**17. Smart Focus Mode**](./17-smart-focus-mode) | **Deep Work Manager.** Checks Calendar for conflicts before starting. Sets Slack DND, blocks time, logs to Sheets, and plays Spotify. | Calendar, Slack, Gemini, Spotify |
 | [**18. Smart Inquiry Responder**](./18-smart-inquiry-responder) | **AI Customer Support.** Classifies inquiries (Sales/Media/Support) and drafts a context-aware reply using Gemini. | Form, Gemini, Sheets, Slack |
+| [**19. AI Contract Reviewer**](./19-ai-contract-reviewer) | **Legal Assistant.** Reviews contract text for risks and missing clauses, acting as a second opinion before you sign. | Form, Gemini, Sheets, Slack |
 
 *(More workflows are currently under development. Target: 20+)*
 
