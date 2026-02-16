@@ -1,0 +1,471 @@
+{
+  "name": "Smart Inquiry Responder: AI Drafts & Categorization",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 📩 Smart Inquiry Responder\n\n**Automate your first response.**\nReceive inquiries via Form, classify them using **Gemini**, and generate a context-aware draft reply. It handles different tones based on the category (e.g., Sales vs Support).\n\n**How it works**\n1. **Input:** Inquiry via **Form** (Name, Email, Category, Message).\n   - *Test Mode simulates: \"Consulting Request\" from a client.*\n2. **Analyze:** **Gemini** analyzes the content and drafts a reply tailored to the category.\n3. **Log:** Saves the inquiry and the draft to **Google Sheets** for review.\n4. **Notify:** Alerts you on **Slack** with a summary.\n\n**Setup steps**\n1. **Credentials:** Connect Gemini, Sheets, Slack.\n2. **Config:** Open **\"Config\"** to set Sheet ID & Slack Channel.\n3. **Test:** Set `TEST_MODE` to `true`.",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "id": "ee499cf1-f9a6-4d16-bbee-c1c756f7d1d1",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Sheet ID & Slack.",
+        "height": 140,
+        "color": 6
+      },
+      "id": "ad7e79a9-2ae3-458e-8dff-943200734196",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📝 Inquiry Input\nForm or Mock Data.",
+        "height": 340,
+        "width": 760,
+        "color": 6
+      },
+      "id": "4e4d9300-8e5c-4e8a-b4f2-5498b5cbc657",
+      "name": "Sticky Note - Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI Secretary\nDrafts Reply based on Category.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "16c4806d-9efb-4c47-954f-7526ea8ffc90",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📤 Log & Notify\nSave to Sheets, Alert Slack.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "5e826ebf-bb7b-4a0b-9752-3bbb74cd5093",
+      "name": "Sticky Note - Output",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "SLACK_CHANNEL",
+              "value": "general",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "56c4bdb5-438b-46a5-bb3b-1b7d646d5644",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -384,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "📬 Contact Us",
+        "formDescription": "We will reply shortly.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "placeholder": "Your Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "placeholder": "name@example.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Category",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {},
+                  {},
+                  {}
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Message",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "97701514-e74f-4d2b-8684-6a6924f7f116",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -528,
+        160
+      ],
+      "webhookId": "contact-form"
+    },
+    {
+      "parameters": {},
+      "id": "221d4662-a62f-4a0c-bdde-f183b05aee3c",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "68d47df1-bfde-4f50-b117-d8f244650b99",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -144,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate Inquiry\nreturn [{\n  json: {\n    Name: \"Tanaka Taro\",\n    Email: \"tanaka@example.com\",\n    Category: \"Sales\",\n    Message: \"I am interested in your AI consulting services. Can we schedule a meeting next week?\"\n  }\n}];"
+      },
+      "id": "6dbef4b3-8453-4c49-9921-ec562c3760de",
+      "name": "Mock Inquiry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Input\nconst mode = $('Config').first().json.TEST_MODE;\nlet data = {};\n\nif (mode === 'true') {\n  data = $('Mock Inquiry').first().json;\n} else {\n  data = $('Form Trigger').first().json;\n}\nreturn { json: data };"
+      },
+      "id": "9c3bf422-8a1b-4f9f-acde-8e9e5647934c",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Professional Secretary.\nDraft a polite reply email based on the user's inquiry category.\n\n[Inquiry Info]\nName: {{ $json.Name }}\nCategory: {{ $json.Category }}\nMessage: {{ $json.Message }}\n\n[Rules]\n- If Category is \"Sales\": Be persuasive, offer a meeting link (https://cal.com/example).\n- If Category is \"Media\": Be grateful, ask for the proposal document.\n- If Category is \"Support\": Be empathetic, promise to investigate within 24 hours.\n- Language: Japanese (Business Formal)\n\n[Output JSON ONLY]\n{\n  \"summary\": \"One line summary of inquiry\",\n  \"draft_subject\": \"Email Subject\",\n  \"draft_body\": \"Email Body content...\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        608,
+        144
+      ],
+      "id": "620bbe64-cdd4-4906-9411-3f028e8d6731",
+      "name": "Gemini: Draft Reply",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse JSON\nconst text = $input.first().json.content.parts[0].text;\nlet result = {};\ntry {\n  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  result = JSON.parse(cleanText);\n} catch (e) {\n  result = { summary: \"Error\", draft_subject: \"Error\", draft_body: \"Parse failed.\" };\n}\nreturn { json: result };"
+      },
+      "id": "256103d6-e3d5-4644-84fe-9b32d5c631a8",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Inquiries"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "Name": "={{ $('Normalize Input').first().json.Name }}",
+            "Email": "={{ $('Normalize Input').first().json.Email }}",
+            "Category": "={{ $('Normalize Input').first().json.Category }}",
+            "Message": "={{ $('Normalize Input').first().json.Message }}",
+            "AI Draft Subject": "={{ $json.draft_subject }}",
+            "AI Draft Body": "={{ $json.draft_body }}",
+            "Status": "Draft"
+          }
+        },
+        "options": {}
+      },
+      "id": "3a7b1878-6f5c-44a1-a94c-68432ca7506c",
+      "name": "Save to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1040,
+        144
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kETRjtRKedfCcNUZ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "text": "=📩 **New Inquiry Received**\n\n**From:** {{ $('Normalize Input').first().json.Name }} ({{ $('Normalize Input').first().json.Category }})\n**Summary:** {{ $json.summary }}\n\n📝 **Draft Reply Created:**\nCheck Google Sheets to review and send.\n\n> {{ $json.draft_subject }}",
+        "otherOptions": {}
+      },
+      "id": "c7bbaa43-2c07-4c58-bd23-2255f079c237",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1264,
+        144
+      ],
+      "webhookId": "105f60b5-a6ec-4c0c-b77f-bf333e60c4cf",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LTRX0YYlkPgvNCGu",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Inquiry": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Save to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Sheets": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Inquiry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "daddea20-3c24-44e1-9caf-e036a89b72f9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "FaXVZvXUL36gSQLi",
+  "tags": []
+}
