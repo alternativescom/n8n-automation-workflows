@@ -1,0 +1,453 @@
+{
+  "name": "AI Contract Reviewer: Legal Risk Check",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## ⚖️ AI Contract Reviewer\n\n**Your First-Pass Legal Assistant.**\nPaste a contract draft, and **Gemini** (acting as a lawyer) will review it for risks, missing clauses, and unfair terms.\n\n**How it works**\n1. **Input:** Paste contract text via **Form**.\n   - *Test Mode uses a sample \"NDA with unlimited liability\".*\n2. **Analyze:** **Gemini** scans for keywords like \"Liability\", \"Termination\", \"Jurisdiction\" and flags risks.\n3. **Report:** Generates a structured review (Risk Level, Summary, Fixes) and saves to **Google Sheets**.\n4. **Notify:** Sends the summary to **Slack**.\n\n**Setup steps**\n1. **Credentials:** Connect Gemini, Sheets, Slack.\n2. **Config:** Open **\"Config\"** to set Sheet ID.\n3. **Test:** Set `TEST_MODE` to `true`.",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "id": "2ce712e7-a10c-405c-a955-b9ed8af6dcd5",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1152,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet Sheet ID & Slack.",
+        "height": 140,
+        "color": 6
+      },
+      "id": "0b9e9e8b-c2c9-405b-824b-f774ace8eb4f",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📝 Contract Input\nPaste text or use Mock.",
+        "height": 340,
+        "width": 760,
+        "color": 6
+      },
+      "id": "0f6368cf-f00c-4050-afb7-f9d47f6af7fb",
+      "name": "Sticky Note - Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 Legal Brain\nGemini reviews the text.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "efd1a8a7-9fdb-4c93-aa92-eb8d440f13b2",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        608,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📤 Report\nSave Review & Notify.",
+        "height": 140,
+        "width": 380,
+        "color": 6
+      },
+      "id": "2cf04a37-ca6b-41c5-9461-69a25293edab",
+      "name": "Sticky Note - Output",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "SHEET_ID",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "SLACK_CHANNEL",
+              "value": "legal-check",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "4f3e83f8-7b16-4373-b225-f34cfa19162c",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -416,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "⚖️ Contract Review Request",
+        "formDescription": "Paste the contract text below for AI analysis.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Contract Title",
+              "placeholder": "NDA for Project X",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Contract Text",
+              "fieldType": "textarea",
+              "placeholder": "Paste the full text here...",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "55272886-726a-4b0f-b221-fa90c6cf23e6",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -592,
+        128
+      ],
+      "webhookId": "contract-review"
+    },
+    {
+      "parameters": {},
+      "id": "4bcdb411-229b-4ace-8ed9-da4485e1c37e",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5932a57c-103c-4560-8f03-5dfba411174e",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -176,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate Risky Contract\nreturn [{\n  json: {\n    \"Contract Title\": \"Risky NDA (Test)\",\n    \"Contract Text\": \"The Receiving Party shall indemnify the Disclosing Party for ANY AND ALL damages, regardless of cause. This agreement shall remain in effect for 100 years. Jurisdiction: Mars Court.\"\n  }\n}];"
+      },
+      "id": "d9e03501-647b-492c-b098-314fdce01126",
+      "name": "Mock Contract",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Input\nconst mode = $('Config').first().json.TEST_MODE;\nlet data = {};\n\nif (mode === 'true') {\n  data = $('Mock Contract').first().json;\n} else {\n  data = $('Form Trigger').first().json;\n}\nreturn { json: data };"
+      },
+      "id": "0fd4c4a0-828f-4d44-8188-df95676f5989",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Senior Legal Advisor.\nReview the following contract text for a Freelancer/Small Business.\n\n[Contract Text]\n{{ $json[\"Contract Text\"] }}\n\n[Instructions]\n1. Identify 3 potential risks (e.g., unfair liability, long term, vague clauses).\n2. Suggest specific fixes for each risk.\n3. Rate the overall risk level (Low/Medium/High).\n4. Output in Japanese.\n\n[Output JSON ONLY]\n{\n  \"risk_level\": \"High\",\n  \"summary\": \"Brief summary of risks\",\n  \"details\": \"- Risk 1: ...\\n- Risk 2: ...\",\n  \"fixes\": \"- Fix 1: ...\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        576,
+        112
+      ],
+      "id": "558c5d2c-663a-4d0a-aef8-dc485940a505",
+      "name": "Gemini: Review",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse JSON\nconst text = $input.first().json.content.parts[0].text;\nlet result = {};\ntry {\n  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  result = JSON.parse(cleanText);\n} catch (e) {\n  result = { risk_level: \"Error\", summary: \"Parse failed\", details: text, fixes: \"\" };\n}\nreturn { json: result };"
+      },
+      "id": "8502b7d1-7fdf-41be-a7b0-ce729a5c3c49",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Contracts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "Title": "={{ $('Normalize Input').first().json[\"Contract Title\"] }}",
+            "Risk Level": "={{ $json.risk_level }}",
+            "Summary": "={{ $json.summary }}",
+            "Details": "={{ $json.details }}",
+            "Fixes": "={{ $json.fixes }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "da214a5d-a80a-43c0-a32c-b86e42db23a0",
+      "name": "Save to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1008,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kETRjtRKedfCcNUZ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "text": "=⚖️ **Contract Review Complete**\n\n**Title:** {{ $('Normalize Input').first().json[\"Contract Title\"] }}\n**Risk Level:** `{{ $json.risk_level }}`\n\n**Summary:**\n{{ $json.summary }}\n\n**Key Risks:**\n{{ $json.details }}\n\n👉 *Check Google Sheets for full details & fixes.*",
+        "otherOptions": {}
+      },
+      "id": "3b663e05-4172-49f3-bae6-0100b1c22784",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1232,
+        112
+      ],
+      "webhookId": "9f63f60b-b4c3-481f-a280-8573fc30bc21",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LTRX0YYlkPgvNCGu",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Contract": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Review": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Save to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Sheets": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "dc8a5901-18a8-4ee5-b2b6-17607f63209f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "XpzvzaD2OkC9Vygf",
+  "tags": []
+}
