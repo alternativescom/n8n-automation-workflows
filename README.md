@@ -32,6 +32,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**18. Smart Inquiry Responder**](./18-smart-inquiry-responder) | **AI Customer Support.** Classifies inquiries (Sales/Media/Support) and drafts a context-aware reply using Gemini. | Form, Gemini, Sheets, Slack |
 | [**19. AI Contract Reviewer**](./19-ai-contract-reviewer) | **Legal Assistant.** Reviews contract text for risks and missing clauses, acting as a second opinion before you sign. | Form, Gemini, Sheets, Slack |
 | [**20. Content Repurposer**](./20-content-repurposer) | **Social Media Multiplier.** Converts a blog URL into optimized drafts for X (Twitter), LinkedIn, and Note. | Form, Scraper, Gemini, Sheets |
+| [**21. AI Tech Watcher**](./21-ai-tech-watcher) | **Personal News Curator.** Fetches RSS, filters by relevance using Gemini, and sends summaries to Slack. | Schedule, RSS, Gemini, Slack |
 
 *(More workflows are currently under development. Target: 20+)*
 
