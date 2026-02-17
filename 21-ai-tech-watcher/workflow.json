@@ -1,0 +1,431 @@
+{
+  "name": "AI Tech Watcher: Personalized News Curator-p",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🗞️ AI Tech Watcher\n\n**Your Personal News Curator.**\nFetches RSS feeds, filters them with **Gemini**, and notifies you of *only* the important news on Slack.\n\n**How it works**\n1. **Trigger:** Runs every morning at 8:00 AM (or Manually).\n2. **Fetch:** Gets latest articles from RSS feeds (e.g., n8n, TechCrunch).\n3. **De-Dupe:** JavaScript Logic filters out old articles.\n4. **Analyze:** Loops through items and uses **Gemini** reads the title/snippet and decides if it's relevant to you.\n   - *Criteria: AI, Automation, No-Code.*\n5. **Notify:** Sends a summary to **Slack**.\n\n**Setup steps**\n1. **Credentials:** Connect Gemini, Slack.\n2. **Config:** Open **\"Config\"** to set RSS URLs & Slack Channel.\n3. **Test:** Click \"Execute Workflow\".",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "id": "7125f3a1-1a81-4c6e-beee-edca5b263738",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configuration\nSet RSS Feeds & Slack.",
+        "height": 140,
+        "width": 288,
+        "color": 6
+      },
+      "id": "71647d94-7e1c-466c-988d-fd7577eccd99",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        256,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📡 Fetch & Filter\nGet RSS & Remove Old Items.",
+        "height": 300,
+        "width": 540,
+        "color": 6
+      },
+      "id": "fae97481-33b1-40e9-91b0-59587f59dae2",
+      "name": "Sticky Note - Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        608,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI Curator\nGemini rates & summarizes.",
+        "height": 140,
+        "width": 440,
+        "color": 6
+      },
+      "id": "6b2852c5-8c59-4956-9176-b59a5063ad1f",
+      "name": "Sticky Note - AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📤 Notify\nSend to Slack.",
+        "height": 140,
+        "width": 340,
+        "color": 6
+      },
+      "id": "d5e5f9a0-da11-49ca-8193-dea0e5759f88",
+      "name": "Sticky Note - Output",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "RSS_URLS",
+              "value": "https://n8n.io/blog/rss/, https://techcrunch.com/category/artificial-intelligence/feed/",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "SLACK_CHANNEL",
+              "value": "news-feed",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "abda3921-7258-4cd8-a233-911bf8f24dfe",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        368,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8
+            }
+          ]
+        }
+      },
+      "id": "4e8ace19-bcbc-4b41-b924-f9b7fefa222a",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        192,
+        96
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "48e85b81-2dad-46c1-9ef8-003408ab3447",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        192,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Split RSS URLs\nconst urls = $('Config').first().json.RSS_URLS.split(',').map(u => u.trim());\nreturn urls.map(url => ({ json: { url } }));"
+      },
+      "id": "cb31cd0f-bd70-4e5e-9bdf-fe2bcb7ed566",
+      "name": "Split URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "id": "b9e4f8ac-64f5-4868-91ca-4e1acc6369fc",
+      "name": "RSS Feed Read",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        688,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as a Tech News Curator.\nAnalyze this article for a No-Code Automation Engineer.\n\n[Article]\nTitle: {{ $json.title }}\nSummary: {{ $json.contentSnippet || $json.content }}\n\n[Instructions]\n1. **Rate Relevance (1-5):** How relevant is this to AI automation, n8n, or productivity?\n2. **Summarize:** Write a 3-bullet point summary in Japanese.\n3. **Output JSON ONLY:**\n{\n  \"relevance\": 5,\n  \"summary_jp\": \"- ...\\n- ...\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        96
+      ],
+      "id": "a737fd3a-02b1-425f-a08b-f9dde77554d0",
+      "name": "Gemini: Curate",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse JSON\nconst text = $input.first().json.content.parts[0].text;\nlet result = {};\ntry {\n  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  result = JSON.parse(cleanText);\n} catch (e) {\n  result = { relevance: 0, summary_jp: \"Error parsing.\" };\n}\nreturn { json: result };"
+      },
+      "id": "768b06b0-f914-4f9a-86d6-a3cdc38e01e4",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is_relevant",
+              "leftValue": "={{ $json.relevance }}",
+              "rightValue": 4,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3b0246d0-5ed5-4910-bde4-ef774795931b",
+      "name": "Is Relevant?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1632,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "text": "=🗞️ **News: {{ $('Deduplication').item.json.title }}**\n\n{{ $json.summary_jp }}\n\n🔗 {{ $('Deduplication').item.json.link }}",
+        "otherOptions": {}
+      },
+      "id": "ea1724b3-2d5a-4ede-b763-6770f453bff3",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1856,
+        64
+      ],
+      "webhookId": "a1a3c374-38b5-43f0-b6c9-542650fe190f",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LTRX0YYlkPgvNCGu",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 重複排除（Deduplication）ロジック\n// 過去に処理した記事IDを記憶し、新着のみを通します\n\nconst staticData = $getWorkflowStaticData('node');\n// 過去に処理したIDリストを取得\nconst processedIds = staticData.processedIds || [];\nconst newItems = [];\nconst newIds = [];\n\n// 入力された記事を一つずつチェック\nfor (const item of $input.all()) {\n  // 記事のID(guid) または リンク(link) を取得\n  const id = item.json.guid || item.json.link;\n  \n  // IDがあり、かつ過去リストになければ「新規」として採用\n  if (id && !processedIds.includes(id)) {\n    newItems.push(item);\n    newIds.push(id);\n  }\n}\n\n// 処理済みリストを更新（最新500件まで保持して容量爆発を防ぐ）\nstaticData.processedIds = [...newIds, ...processedIds].slice(0, 500);\n\nreturn newItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        112
+      ],
+      "id": "c22981e8-fa14-4130-9434-56f8cd12824f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        112
+      ],
+      "id": "70eb0c0f-fbc5-4643-8347-f1d1aa26fb82",
+      "name": "Loop Over Items"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Split URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split URLs": {
+      "main": [
+        [
+          {
+            "node": "RSS Feed Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Curate": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Is Relevant?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Relevant?": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Feed Read": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Curate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "21624e48-6b77-4473-8574-e1b9dcb3970a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "Oyk4OjTr8sAYKMw6",
+  "tags": []
+}
