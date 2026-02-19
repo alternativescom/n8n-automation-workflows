@@ -1,0 +1,339 @@
+{
+  "name": "AI Art Director: Auto Featured Image",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-domain.com/wp-json/wp/v2/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "attachment; filename=featured-image.jpg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [2160, 144],
+      "id": "df442064-948a-4b8a-acc3-39e08f2f09bd",
+      "name": "HTTP Request",
+      "credentials": {
+        "wordpressApi": {
+          "id": "dv4vYl7K5tw2JbT6",
+          "name": "Wordpress account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.unsplash.com/search/photos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.content.parts[0].text }}"
+            },
+            {
+              "name": "per_page",
+              "value": "1"
+            },
+            {
+              "name": "orientation",
+              "value": "landscape"
+            },
+            {
+              "name": "client_id",
+              "value": "YOUR_UNSPLASH_ACCESS_KEY"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [1712, 144],
+      "id": "d74d9f7d-b20d-4fee-8b86-9b37c6d1114f",
+      "name": "Unsplash"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.results[0].urls.full }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "7dea57fd-496c-43d9-9165-426f78d7d011",
+      "name": "Download Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1936, 144]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as an Art Director for a Tech Blog.\nGenerate a search query for Unsplash based on the article title.\n\n[Article Title]\n{{ $json[\"Article Title\"] }}\n\n[Style Guide]\n{{ $('Config').first().json.IMAGE_STYLE }}\n\n[Instructions]\n1. Translate the core concept of the title into 2-3 English keywords.\n2. Combine with Style Guide keywords.\n3. Output ONLY the search query string (no JSON, no quotes).\n\nExample Output:\nartificial intelligence glowing neural network abstract blue"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [1360, 144],
+      "id": "141586cc-609a-4139-a721-9ecc512b89a5",
+      "name": "Gemini: Director",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Input\nconst mode = $('Config').first().json.TEST_MODE;\nlet data = {};\n\nif (mode === 'true') {\n  data = $('Mock Title').first().json;\n} else {\n  data = $('Form Trigger').first().json;\n}\nreturn { json: data };"
+      },
+      "id": "dbb20602-cb36-40d8-81f7-381c964c24f1",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1136, 144]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate Article Title\nreturn [{\n  json: {\n    \"Article Title\": \"The Future of Autonomous AI Agents in 2026\"\n  }\n}];"
+      },
+      "id": "e2174b72-7a4d-4c1e-8c6c-d1a131fdc377",
+      "name": "Mock Title",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [912, 72]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.TEST_MODE }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4fef1313-d479-40cc-84b2-d4e0f213bc2c"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "21af9070-36ec-4da2-aef4-2f9415f19323",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [688, 144]
+    },
+    {
+      "parameters": {},
+      "id": "98825907-075c-4367-bbe3-86efe46015d9",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 240]
+    },
+    {
+      "parameters": {
+        "formTitle": "🎨 Featured Image Selector",
+        "formDescription": "Enter your article title to find a matching image.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Article Title",
+              "placeholder": "e.g. Automating Invoice Processing with AI",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5a838274-1ee0-4ac4-9e85-ea7cfda26b44",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [240, 48],
+      "webhookId": "9c69f5fe-3568-4ed9-a860-9baab3114a0d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "IMAGE_STYLE",
+              "value": "futuristic, technology, abstract, blue, purple, minimal, high quality",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "4c9cd26f-c89b-4cbe-82bb-6eceb4a56ff4",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [464, 144]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Unsplash": {
+      "main": [
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Director": {
+      "main": [
+        [
+          {
+            "node": "Unsplash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Director",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Title": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Mock Title",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
