@@ -33,6 +33,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**19. AI Contract Reviewer**](./19-ai-contract-reviewer) | **Legal Assistant.** Reviews contract text for risks and missing clauses, acting as a second opinion before you sign. | Form, Gemini, Sheets, Slack |
 | [**20. Content Repurposer**](./20-content-repurposer) | **Social Media Multiplier.** Converts a blog URL into optimized drafts for X (Twitter), LinkedIn, and Note. | Form, Scraper, Gemini, Sheets |
 | [**21. AI Tech Watcher**](./21-ai-tech-watcher) | **Personal News Curator.** Fetches RSS, filters by relevance using Gemini, and sends summaries to Slack. | Schedule, RSS, Gemini, Slack |
+| [**22. AI Art Director**](./22-ai-art-director) | **Auto Featured Image.** Generates search keywords from an article title using Gemini, fetches photos from Unsplash, and uploads directly to WordPress. | Form, Gemini, HTTP Request |
 
 *(More workflows are currently under development. Target: 20+)*
 
