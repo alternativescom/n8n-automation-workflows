@@ -1,0 +1,141 @@
+{
+  "name": "Telework Task Inventory Bot",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-node",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [160, 240]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "userName",
+              "value": "山田太郎"
+            },
+            {
+              "name": "messageText",
+              "value": "お疲れ様です。午前中は全体の定例ミーティングで1時間使いました。その後、A社向けの提案資料の作成を2時間ほど進めています。午後は月末の経費精算処理を30分やってから退勤します。"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "mock-data-node",
+      "name": "Mock Teams Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [380, 240]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは優秀な業務管理アシスタントです。\n以下の従業員による業務報告テキストから、タスクを抽出し、厳密なJSON配列形式で出力してください。\n\n[業務報告テキスト]\n{{ $json.messageText }}\n\n[抽出ルール]\n1. 挨拶や雑談は除外すること。\n2. 1つのテキストに複数のタスクが含まれる場合は分割すること。\n3. 各タスクは以下のキーを持つJSONオブジェクトとすること。\n   - \"TaskName\": 具体的な作業内容（文字列）\n   - \"Duration\": 所要時間（分単位の数値。不明瞭な場合は null にする）\n   - \"Category\": 以下の4つから最も近いものを選択（\"会議・連絡\", \"実務・作成\", \"事務・管理\", \"その他\"）\n\n[出力形式の例]\n[\n  { \"TaskName\": \"A社向け提案書の作成\", \"Duration\": 120, \"Category\": \"実務・作成\" },\n  { \"TaskName\": \"チーム朝会\", \"Duration\": 30, \"Category\": \"会議・連絡\" }\n]\n\n※JSON以外のテキスト（```json などのマークダウン記法含む）は一切出力しないでください。"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [600, 240],
+      "id": "gemini-extractor",
+      "name": "Gemini: Extract Tasks",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID_HERE",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 正しい階層からGeminiのテキストを取得\nlet rawText = $input.item.json.content.parts[0].text;\n\n// 2. もしAIが余計な ```json などのマークダウンをつけてきたら、それを削ぎ落とす\nrawText = rawText.replace(/```json\\n?/g, '').replace(/```/g, '').trim();\n\nlet tasks = [];\n\n// 3. 綺麗な状態になったテキストをJSONデータとして変換\ntry {\n  tasks = JSON.parse(rawText);\n} catch (e) {\n  throw new Error(\"Gemini did not return valid JSON: \" + rawText);\n}\n\n// 4. スプレッドシート用にデータを整形（投稿者名と日付を付与）\nconst userName = $('Mock Teams Message').first().json.userName;\nconst today = new Date().toISOString().split('T')[0];\n\nreturn tasks.map(task => {\n  return {\n    json: {\n      \"日付\": today,\n      \"担当者\": userName,\n      \"タスク名\": task.TaskName,\n      \"所要時間(分)\": task.Duration,\n      \"カテゴリ\": task.Category\n    }\n  };\n});"
+      },
+      "id": "parse-code-node",
+      "name": "Format for Sheets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [820, 240]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "シート1",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "id": "sheets-node",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1040, 240]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Mock Teams Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Teams Message": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Extract Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Extract Tasks": {
+      "main": [
+        [
+          {
+            "node": "Format for Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format for Sheets": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
