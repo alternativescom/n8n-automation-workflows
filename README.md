@@ -35,6 +35,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**21. AI Tech Watcher**](./21-ai-tech-watcher) | **Personal News Curator.** Fetches RSS, filters by relevance using Gemini, and sends summaries to Slack. | Schedule, RSS, Gemini, Slack |
 | [**22. AI Art Director**](./22-ai-art-director) | **Auto Featured Image.** Generates search keywords from an article title using Gemini, fetches photos from Unsplash, and uploads directly to WordPress. | Form, Gemini, HTTP Request |
 | [**23. Telework Task Inventory Bot**](./23-telework-task-inventory-bot) | **Automated Time Tracking.** Extracts tasks, durations, and categories from natural language chat messages using Gemini, and logs them into Google Sheets. | Trigger, Gemini, Code, Sheets |
+| [**24. Security Audit Bot**](./24-security-audit-bot) | **Compliance & Security.** Regularly audits Google Sheets account ledgers, generates AI-driven password change alerts with security tips, and logs audit evidence automatically. | Trigger, Code, Gemini, Sheets |
 
 *(More workflows are currently under development. Target: 20+)*
 
