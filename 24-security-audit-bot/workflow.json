@@ -1,0 +1,119 @@
+{
+  "name": "Security Audit Bot",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [160, 240]
+    },
+    {
+      "parameters": {
+        "jsCode": "// スプレッドシートから読み込んだ「アカウント台帳」のモックデータ\nreturn [\n  {\n    json: {\n      accounts: [\n        { \"氏名\": \"山田太郎\", \"メール\": \"yamada@example.com\", \"最終パスワード変更日\": \"2025-10-15\", \"状態\": \"有効\" },\n        { \"氏名\": \"鈴木花子\", \"メール\": \"suzuki@example.com\", \"最終パスワード変更日\": \"2026-02-10\", \"状態\": \"有効\" },\n        { \"氏名\": \"佐藤次郎\", \"メール\": \"sato@example.com\", \"最終パスワード変更日\": \"2025-08-20\", \"状態\": \"有効\" }\n      ]\n    }\n  }\n];"
+      },
+      "id": "mock-data",
+      "name": "Mock Account Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [380, 240]
+    },
+    {
+      "parameters": {
+        "jsCode": "const accounts = $input.first().json.accounts;\nconst today = new Date(); // 実行日の日付\nconst targetUsers = [];\n\n// パスワード変更日から90日以上経過しているユーザーを抽出\nfor (const acc of accounts) {\n  if (acc['状態'] === '有効') {\n    const lastChange = new Date(acc['最終パスワード変更日']);\n    const diffTime = Math.abs(today - lastChange);\n    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));\n    \n    if (diffDays > 90) {\n      targetUsers.push(`${acc['氏名']} (${diffDays}日経過)`);\n    }\n  }\n}\n\n// 抽出結果を次のノードへ渡す\nreturn [{ json: { targetUsers: targetUsers.join(', '), count: targetUsers.length } }];"
+      },
+      "id": "filter-node",
+      "name": "Filter > 90 Days",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [600, 240]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは社内の情報セキュリティ管理者です。\n以下の対象者に対して、チャットツール（Teams/Slack）で送信する「パスワード変更のお願い」のメッセージを作成してください。\n\n[対象者]\n{{ $json.targetUsers }}\n\n[要件]\n1. 毎月同じ文面だと現場に無視されるため、冒頭に「今月のセキュリティ・プチ豆知識（例：最近のフィッシング詐欺の手口、パスワードの使い回しの危険性など）」を1〜2文で入れてください。\n2. パスワード変更から90日以上経過しているため、速やかに変更するよう促してください。\n3. 全体的に丁寧かつ、少し親しみやすいトーンにしてください。\n4. Markdownの装飾（太字など）を使って読みやすくしてください。"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [820, 240],
+      "id": "gemini-msg",
+      "name": "Gemini: Generate Message",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID_HERE",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $input.item.json.content.parts[0].text;\nconst targetCount = $('Filter > 90 Days').first().json.count;\nconst today = new Date().toISOString().split('T')[0];\n\n// 最終的にTeams等へ送るテキストと、スプレッドシートに「監査エビデンス」として残すデータを出力\nreturn [\n  {\n    json: {\n      \"Teams通知用メッセージ\": message,\n      \"監査ログ記録用データ\": {\n        \"監査日\": today,\n        \"対象者数\": targetCount,\n        \"ステータス\": \"完了\"\n      }\n    }\n  }\n];"
+      },
+      "id": "format-output",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1040, 240]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Mock Account Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Account Data": {
+      "main": [
+        [
+          {
+            "node": "Filter > 90 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter > 90 Days": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Generate Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Generate Message": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
