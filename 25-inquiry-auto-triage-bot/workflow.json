@@ -1,0 +1,104 @@
+{
+  "name": "問い合わせメール自動振り分け＆返信ドラフト生成",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 15
+            }
+          ]
+        },
+        "filters": {
+          "q": "is:unread to:info@yourdomain.com"
+        },
+        "options": {}
+      },
+      "id": "gmail-trigger",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.1,
+      "position": [160, 240],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは企業の優秀なカスタマーサポート担当者です。\n以下の「お客様からの問い合わせメール」を読み、指定されたフォーマットで出力してください。\n\n【件名】\n{{ $json.snippet }}\n\n【本文】\n{{ $json.textPlain }}\n\n【出力フォーマット】（※前置きや挨拶は不要です。以下の項目のみを出力してください）\n\n1. 📊 分類：[営業案件 / 質問・サポート / クレーム / 営業メール(スパム) / その他] の中から最も適切なものを1つ選択。\n2. 🏢 送信者：[会社名と氏名を抽出。不明な場合は「不明」]\n3. 📝 要約：[メールの要件を3行以内の箇条書きで分かりやすく要約]\n4. ✉️ 返信ドラフト：\n[このメールに対する丁寧な返信文のドラフト（下書き）を作成してください。件名や挨拶も含め、そのままコピーして使えるレベルにしてください。スパムや明らかな営業メールの場合は「返信不要」としてください。]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-analysis",
+      "name": "Gemini: Analyze & Draft",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [400, 240],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_CHANNEL_ID",
+        "text": "=🚨 *新しい問い合わせを受信しました！*\n\n{{ $json.content.parts[0].text }}",
+        "otherOptions": {}
+      },
+      "id": "slack-notification",
+      "name": "Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [640, 240],
+      "credentials": {
+        "slackApi": {
+          "id": "YOUR_SLACK_CREDENTIAL",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Analyze & Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Analyze & Draft": {
+      "main": [
+        [
+          {
+            "node": "Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
