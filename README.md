@@ -37,6 +37,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**23. Telework Task Inventory Bot**](./23-telework-task-inventory-bot) | **Automated Time Tracking.** Extracts tasks, durations, and categories from natural language chat messages using Gemini, and logs them into Google Sheets. | Trigger, Gemini, Code, Sheets |
 | [**24. Security Audit Bot**](./24-security-audit-bot) | **Compliance & Security.** Regularly audits Google Sheets account ledgers, generates AI-driven password change alerts with security tips, and logs audit evidence automatically. | Trigger, Code, Gemini, Sheets |
 | [**25. Inquiry Auto-Triage Bot**](./25-inquiry-auto-triage-bot) | **Customer Support & Automation.** Automatically monitors incoming emails, uses AI to categorize them (sales, support, spam), generates draft responses, and notifies the team via Slack to minimize response time. | Gmail Trigger, Gemini, Slack |
+| [**26. AI Research to Notion Bot**](./26-ai-research-notion-bot) | **Knowledge Management.** Automatically fetches news via RSS, uses Gemini to extract professional consulting insights and content ideas, and saves them to a Notion database. | RSS Trigger, Gemini, Notion |
 
 *(More workflows are currently under development. Target: 20+)*
 
