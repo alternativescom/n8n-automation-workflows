@@ -1,0 +1,114 @@
+{
+  "name": "独自リサーチ：RSS×Gemini×Notion自動蓄積ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRE5mTTJRU0FtcGhLQUFQAQ?hl=ja&gl=JP&ceid=JP:ja"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [-432, 96],
+      "id": "rss-feed-trigger",
+      "name": "RSS Feed Trigger"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは「AI導入コンサルティングと補助金活用支援」を行う企業のトップコンサルタントであり、特に「5名規模の少人数チーム・専任情シス不在」の中小企業へのDX支援を得意としています。\n\n以下のニュース記事（RSS）の内容を読み、実務と直結する深い考察を抽出してください。\n\n【タイトル】 {{ $('RSS Feed Trigger').item.json.title }}\n【概要】 {{ $('RSS Feed Trigger').item.json.contentSnippet }}\n\n【出力フォーマット】（※挨拶不要、以下の項目のみをMarkdown形式で出力）\n\n### 📝 3行サマリー\n・[記事の最も重要なポイントを1文で]\n・[中小企業にとって関係のある部分]\n・[今後の動向や予測]\n\n### 💡 コンサル視点での「刺さる」提案アイデア\n[この記事の話題をフックにして、専任情シスのいない5名規模のクライアントに、どのようなAI導入や業務改善（n8nなど）を提案できるか。また、IT導入補助金などの支援策とどう絡められるか、具体的な営業トークや提案シナリオを1〜2段落で記述してください。]\n\n### 📢 情報発信（ブログ・Zenn・SNS）の切り口\n[この記事のテーマをもとに、経営者層や情シス担当者向けに記事を書くなら、どのようなタイトル・切り口が良いか。1つアイデアを出してください。]\n\n### 🏷️ タグ\n[関連キーワードを3つ、カンマ区切りで。例: AI導入, 業務効率化, セキュリティ]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-analyze",
+      "name": "Gemini: Analyze News",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [-208, 96],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "YOUR_NOTION_DATABASE_ID",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "タイトル|title",
+              "title": "={{ $('RSS Feed Trigger').item.json.title }}"
+            },
+            {
+              "key": "列1|rich_text",
+              "textContent": "={{ $('RSS Feed Trigger').item.json.link }}"
+            },
+            {
+              "key": "列2|rich_text",
+              "textContent": "={{ $json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notion-save",
+      "name": "Notion: Save to Database",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [144, 96],
+      "credentials": {
+        "notionApi": {
+          "id": "YOUR_NOTION_CREDENTIAL",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RSS Feed Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Analyze News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Analyze News": {
+      "main": [
+        [
+          {
+            "node": "Notion: Save to Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
