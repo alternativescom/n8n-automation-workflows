@@ -1,0 +1,114 @@
+{
+  "name": "LinkedIn投稿・自動生成フォーム（n8n Form Trigger × Gemini）",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "LinkedIn投稿 自動生成アシスタント",
+        "formDescription": "記事のURLと伝えたい要点を入力すると、AIがバズる構成のLinkedIn投稿文を作成します。",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "ターゲット層",
+              "fieldName": "target_audience",
+              "fieldType": "dropdown",
+              "optionsList": [
+                {
+                  "option": "経営者・役員"
+                },
+                {
+                  "option": "情シス・DX担当者"
+                },
+                {
+                  "option": "営業マネージャー"
+                }
+              ]
+            },
+            {
+              "fieldLabel": "紹介したい記事のURL",
+              "fieldName": "article_url",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "最も伝えたいコアメッセージ（箇条書きOK）",
+              "fieldName": "core_message",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "form-trigger",
+      "name": "n8n Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたはBtoBマーケティングのプロフェッショナルです。以下の入力情報をもとに、LinkedIn向けの魅力的な投稿文を作成してください。\n\n【入力情報】\n・ターゲット層: {{ $json.target_audience }}\n・参考記事URL: {{ $json.article_url }}\n・コアメッセージ: {{ $json.core_message }}\n\n【出力の条件】\n・ビジネスパーソン向けの丁寧かつ熱量のあるトーン。\n・冒頭でターゲットの課題に共感するフックを入れる。\n・絵文字を適度に使い、視覚的に読みやすくする。\n・ハッシュタグを3〜5個つける。"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-generate",
+      "name": "Gemini: Generate Post",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [220, 0],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [440, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "n8n Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gemini: Generate Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: Generate Post": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
