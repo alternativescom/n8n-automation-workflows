@@ -1,31 +1,29 @@
-# AI Subsidy Hunter: Grant & Fund Tracker 💰
+# 15. 【v2.0】AI Subsidy Hunter (全自動・補助金ハンター)
 
 ![Screenshot](スクリーンショット15.png)
 
-## Overview
-**Stop manually checking government websites.**
-This workflow is designed for small business owners and freelancers. It automatically searches Google for new subsidies, grants, and funding opportunities based on your keywords (e.g., "IT Subsidy", "Small Business Grant"). **Gemini (AI)** filters out the noise and sends a clean summary of deadlines and max amounts to **Slack**.
+## 🚀 v2.0 メジャーアップデートのお知らせ
+以前公開したRSSベースの補助金収集ボットから、大幅なアーキテクチャの刷新を行いました。
+RSSを配信していない省庁や自治体の情報を取りこぼす課題を解決するため、**「Google Search APIによる能動的な検索」**と**「Jina AIによるWebページの全文スクレイピング」**を組み込みました。これにより、Geminiがページ本文全体を読み込み、より高精度に「自社に適合する補助金かどうか」を判定できるようになりました。
 
-## Key Features
-- **🕵️ Automated Patrol:** Runs weekly (or daily) to check for new information via Google Custom Search API.
-- **🧠 AI Filtering:** Gemini reads the search snippets to identify relevant financial aid and discards irrelevant news.
-- **🧪 Built-in Test Mode:** Simulates a search result for "IT Subsidy 2026" so you can test the Slack notification instantly.
+## ✨ 機能概要
+毎朝、指定したキーワード（例：IT導入補助金、助成金など）で直近24時間の最新情報をGoogle検索し、見つかったWebページの本文をAI（Gemini）が読み込みます。自社の事業内容に照らし合わせて適合度を判定し、有益な情報のみを要約してSlackへ通知します。
 
-## How It Works
-1. **Trigger:** Runs on a schedule (e.g., every Monday morning).
-2. **Search:** Searches Google for specified keywords (restricted to the last 7 days).
-3. **Analyze:** Gemini summarizes the findings into a report (Name, Deadline, Amount).
-4. **Notify:** Posts the report to your Slack channel.
+## ⚙️ 使用している技術スタック
+* **Google Custom Search API:** 最新のWeb検索結果を取得。
+* **Jina AI (Reader API):** 検索結果のURLから、ページ本文をクリーンなMarkdown形式でスクレイピング。
+* **Gemini (Google AI):** スキルプロファイルに基づく適合度判定と要約。
+* **Slack:** 判定結果の通知。
 
-## Setup Steps
-1. **Import:** Import `workflow.json` into n8n.
-2. **Credentials:** Set up Google Custom Search, Gemini, and Slack.
-3. **Config:**
-   - Open **"Config"** to set your `KEYWORDS` (e.g., "補助金", "助成金"), `SLACK_CHANNEL`, `GOOGLE_API_KEY`, and `SEARCH_ENGINE_ID`.
-   - Set `TEST_MODE` to `true` to test.
+## ⚠️ 構築時の重要ポイント（ハマりやすい罠）
+1. **Google Custom Search APIの制限解除:**
+   Google Cloud Consoleにて、APIキーに「Custom Search API」の利用許可を追加しないと `Requests to this API are blocked.` のエラーが発生します。設定後、反映までに数分かかります。
+2. **Gemini APIのRate Limit（無料枠制限）回避:**
+   無料枠（1分間に15リクエストまで）の制限に引っかからないよう、`Loop Over Items` ノードと `Wait` ノードを組み合わせ、1件処理するごとに8秒程度の待機時間を設けています。
 
-## Requirements
-- n8n v1.x or later
-- Google Custom Search API Key & Engine ID
-- Google Gemini API Key
-- Slack Account
+## 🚀 導入手順
+1. 本リポジトリの `workflow.json` をn8nにインポートします。
+2. `Google Search API` ノードにGCPの認証情報と検索エンジンID（cx）を設定します。
+3. `Gemini` ノードにAPIキーを設定し、プロンプト内の「自社の事業内容（例：テレワーク推進コンサルティングを行う有限会社）」をご自身の環境に合わせて書き換えてください。
+4. `Slack Notification` ノードに認証情報と通知先チャンネルを設定します。
+5. ワークフローをActiveにして完了です。
