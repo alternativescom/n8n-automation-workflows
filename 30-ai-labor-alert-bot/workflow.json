@@ -1,0 +1,118 @@
+{
+  "name": "深夜チャット・労務アラートボット（Gemini × Gmail）",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "毎朝8時に実行",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 実際の実運用では、ここでSlackやTeamsのAPIから\n// 「前日22時〜今朝6時」までのメッセージ履歴を取得・結合します。\n// 今回はテスト用に、架空の「深夜のチャットログ」を生成してAIに渡します。\n\nreturn [\n  {\n    chat_logs: \"[23:15] 田中: すみません、明日のクライアント説明資料がまだ終わらず、もう少し残ります。\\n[01:30] 佐藤: 本番サーバー再起動しました。謎のエラー吐き続けてて胃が痛いです...。\\n[02:45] 田中: やっと終わりました。頭回ってないので明日ミスがあったらすみません。\\n[04:00] 鈴木: （分報ch）眠れない。今週のタスク全部終わる気がしない。\\n[06:30] 高橋: おはようございます、本日のデイリーMTGよろしくお願いします。\"\n  }\n];"
+      },
+      "id": "generate-mock-logs",
+      "name": "深夜ログの取得(Mock)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたはIT企業で働く、産業カウンセラー資格を持った「ベテラン労務マネージャー」です。\nフルリモート環境下で発生しやすい「隠れ残業」や、テキストコミュニケーションから滲み出る「メンタル不調のサイン」を見逃さず、マネジメント層へ適切にアラートを上げるのがあなたの仕事です。\n\n以下の【入力データ】は、社内チャット（Slack/Teams）における「深夜・早朝・休日」のメッセージログです。\nこのログを分析し、労務リスク（過重労働、焦り、疲労、SOSの兆候など）を判定してください。\n\n※重要：あなたは医師ではないため、医学的な診断は絶対に避けてください。あくまで「マネージャーが声掛け（1on1）をするための客観的なアラート」として出力してください。\n\n【入力データ（深夜・休日のチャットログ）】\n{{ $json.chat_logs }}\n\n【出力フォーマット】\n以下の構成で、管理者向けにレポートを作成してください。\n\n### 🚨 本日の労務・メンタルリスク判定\n* **全体リスクレベル：** 【🔴高（即時対応が必要） / 🟡中（要注意・声掛け推奨） / 🟢低（特記事項なし）】\n* **ピックアップ対象者：** （リスクが見られるメンバーの氏名を列挙）\n\n### 🔍 懸念される発言と分析サマリー\n（対象者がいる場合、その人のどのような発言・時間帯がリスクと感じたか具体的に指摘してください）\n\n### 💡 労務マネージャーからの推奨アクション\n（「〇〇さんに対して、本日の午前中にカジュアルな1on1をセットし、タスク量の調整を行ってください」など、管理者がすぐに行うべき具体的なアクションを提案してください）"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [440, 0],
+      "id": "message-a-model",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "your-email@example.com",
+        "subject": "労務管理：勤怠アラート",
+        "emailType": "text",
+        "message": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [660, 0],
+      "id": "send-a-message",
+      "name": "Send a message",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "毎朝8時に実行": {
+      "main": [
+        [
+          {
+            "node": "深夜ログの取得(Mock)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "深夜ログの取得(Mock)": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
