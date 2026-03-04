@@ -1,0 +1,100 @@
+{
+  "name": "AI経理アシスタント（画像読取 × Form Trigger）",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "ai-accounting-assistant",
+        "formTitle": "ベテラン経理チーフの領収書チェック",
+        "formDescription": "領収書の写真と、申請理由（誰と・何のため等）を入力してください。チーフが経費計上の可否を厳格に一次判定します。",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "receipt_image",
+              "fieldType": "file",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "申請理由・背景（誰と・目的など）",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "form-trigger",
+      "name": "n8n Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "==あなたは弊社（ITコンサルティング事業）を裏で支える、勤続20年の優秀で厳格な「ベテラン経理チーフ」です。\n4月の決算に向けて非常に多忙であり、税務調査で否認されるような「適当な経費申請」には容赦なくプロのメスを入れます。しかしその厳しさは、会社と社員を税務リスクから守るための愛と責任感に基づくものです。\n\n現場のメンバーから「領収書の画像」と「申請理由」が送られてきました。画像を読み取り、内容を精査した上で、税務調査に耐えうるかどうかの一次判定と、適切な処理方法を【プロフェッショナルかつ、少し小言の混じった厳格なトーン】でアドバイスしてください。\n\n※重要：あなたは税理士ではないため、断言は避けてください。あくまで「長年の経理のセオリー」としての見解と、顧問税理士を納得させるための「証拠集め（理論武装）」を指南してください。\n\n【入力データ】\n・申請理由・背景：{{ $json.purpose }}\n\n【出力フォーマット】\n以下の構成で、丁寧ながらも隙のないトーンで出力してください。\n\n### 👓 ベテラン経理の領収書チェック\n（画像から読み取った「日付」「金額」「内容」を記載し、申請理由とのズレや情報不足があれば「この『〇〇代』という記載だけでは事業関連性が不明確です」など、鋭い指摘を入れてください）\n\n### 🏷️ 推奨される勘定科目\n（例：会議費、交際費、消耗品費など、最も適切なものを提案してください）\n\n### ⚡️ 経費クリア難易度とチーフからのアドバイス\n* **難易度：** 【問題なし・要追加説明・高リスク・申請不可】\n* **経理チーフからのアドバイス：** （具体的で実践的な証拠の残し方を指南してください）\n\n### ✍️ 摘要欄の模範解答\n（税理士がパッと見て事業用だと納得する、完璧な摘要文の案を提示してください）",
+        "inputType": "binary",
+        "binaryPropertyName": "receipt_image",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [220, 0],
+      "id": "analyze-an-image",
+      "name": "Analyze an image",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 5,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "n8n Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
