@@ -41,6 +41,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**28. LinkedIn Post Generator**](./28-linkedin-post-generator) | **Content Generation.** Provides a web form to input an article URL and core messages, uses Gemini to generate professional BtoB LinkedIn posts, and returns the text directly to the browser. | Form Trigger, Gemini, Respond to Webhook |
 | [**29. AI Accounting Assistant**](./29-ai-accounting-assistant) | **Finance & Compliance.** Analyzes receipt images uploaded via a web form. Gemini acts as a strict, veteran accounting chief to suggest account titles and advise on tax compliance and necessary evidence. | Form Trigger, Gemini (Vision) |
 | [**30. AI Labor Alert Bot**](./30-ai-labor-alert-bot) | **HR & Compliance.** Analyzes late-night/holiday chat logs to detect hidden overtime or mental health risks, sending actionable alerts to managers. | Schedule, Gemini, Gmail |
+| [**31. Shadow IT Detector**](./31-shadow-it-detector) | **Security & Audit.** Provides a web form to upload credit card statement CSVs. Gemini analyzes the expenses, detects unauthorized SaaS usage (Shadow IT) against a whitelist, and emails a compliance report. | Form Trigger, CSV Read, Gemini, Gmail |
 
 *(More workflows are currently under development. Target: 20+)*
 
