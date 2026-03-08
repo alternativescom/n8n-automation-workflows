@@ -1,0 +1,164 @@
+{
+  "name": "シャドーIT（野良SaaS）検知ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "audit-csv-upload",
+        "formTitle": "経費データ監査ポータル",
+        "formDescription": "今月のクレジットカード明細（CSV形式）をアップロードしてください。AIがシャドーITの利用を自動監査します。",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "クレジットカード明細 (CSV)",
+              "fieldType": "file",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "form-trigger",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "binaryPropertyName": "クレジットカード明細 (CSV)",
+        "options": {}
+      },
+      "id": "read-csv",
+      "name": "CSV読み込み",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// CSVの各行データを、Geminiが読みやすいように1つのテキストに結合します。\nconst items = $input.all();\nconst dataString = items.map(item => JSON.stringify(item.json)).join('\\n');\nreturn [{ combined_data: dataString }];"
+      },
+      "id": "aggregate-data",
+      "name": "データをテキスト化",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは企業の「セキュリティ監査・情シス担当マネージャー」です。\n従業員の経費精算データ（クレジットカード明細）から、会社が許可していないクラウドサービスやソフトウェア（シャドーIT）の利用がないかを監査します。\n\n【社内許可済みSaaS（ホワイトリスト）】\n* Google Workspace\n* AWS (Amazon Web Services)\n* Slack\n* Canva\n* n8n\n\n以下の【入力データ】は、今月のクレジットカード明細（CSVから抽出したデータ）です。\nこのデータから「ITサービス・SaaS・ソフトウェア」と思われる決済を抽出し、ホワイトリストと照合してください。\n※飲食代や交通費などのIT以外の経費は完全に無視してください。\n\n【入力データ（クレカ明細）】\n{{ $json.combined_data }}\n\n【出力フォーマット】\n以下の構成で、レポートを作成してください。\n\n### 🚨 シャドーIT（野良SaaS）検知レポート\n* **🔴 未承認ツール（シャドーITの疑い）:**\n  （ホワイトリストにないIT関連の決済があれば列挙し、情報漏洩リスクやアカウント管理の観点から、情シスとしての対応方針・注意喚起を記載してください）\n* **🟢 承認済みツール:**\n  （リストと一致した決済を記載）\n\n### 💡 監査マネージャーからのコメント\n（従業員への啓蒙や、今後のルール策定についてのアドバイス）"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [660, 0],
+      "id": "gemini-auditor",
+      "name": "Gemini (監査マネージャー)",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "your-email@example.com",
+        "subject": "【セキュリティ監査】今月のシャドーIT検知レポート",
+        "emailType": "text",
+        "message": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [880, -100],
+      "id": "send-email",
+      "name": "Gmail通知",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "監査が完了し、レポートをメールで送信しました。受信トレイをご確認ください。",
+        "options": {}
+      },
+      "id": "respond-to-webhook",
+      "name": "ブラウザへ応答",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 100]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "CSV読み込み",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CSV読み込み": {
+      "main": [
+        [
+          {
+            "node": "データをテキスト化",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "データをテキスト化": {
+      "main": [
+        [
+          {
+            "node": "Gemini (監査マネージャー)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (監査マネージャー)": {
+      "main": [
+        [
+          {
+            "node": "Gmail通知",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ブラウザへ応答",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
