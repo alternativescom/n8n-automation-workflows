@@ -1,0 +1,188 @@
+{
+  "name": "AI営業アシスタント（商談準備・企業分析ボット）",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "sales-inquiry",
+        "formTitle": "お問い合わせフォーム（デモ）",
+        "formDescription": "企業情報とご相談内容を入力してください。裏側でAIが商談準備シートを生成します。",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "企業名",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "企業URL",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "ご相談内容",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "form-trigger",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json['企業URL'] }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true
+            }
+          }
+        }
+      },
+      "id": "http-request",
+      "name": "対象サイトへアクセス",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "extractionValues": {
+          "values": [
+            {
+              "key": "website_text",
+              "cssSelector": "body",
+              "returnValue": "value"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "html-extract",
+      "name": "サイトのテキスト抽出",
+      "type": "n8n-nodes-base.htmlExtract",
+      "typeVersion": 1,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたはBtoB向けITコンサルティング企業で働く、超優秀なインサイドセールス・リサーチャーです。\n新たに自社サイトへお問い合わせをしてきた見込み客（リード）との初回商談に向けて、営業担当者が「1分で読める商談準備シート」を作成してください。\n\n以下の【入力データ】には、見込み客の「Webサイトから抽出した情報」と「お問い合わせ内容」が含まれています。\nこれらを分析し、相手の事業内容を把握した上で、どのようなアプローチが効果的か仮説を立ててください。\n\n【入力データ】\n* 企業名: {{ $('Form Trigger').item.json['企業名'] }}\n* Webサイト情報: {{ $json.website_text }}\n* お問い合わせ内容: {{ $('Form Trigger').item.json['ご相談内容'] }}\n\n【出力フォーマット】\n以下の構成でレポートを作成してください。\n\n### 🏢 企業概要と想定されるビジネスモデル（1〜2行で簡潔に）\n### 🎯 お問い合わせの背景（推測される真の課題）\n### 💡 商談での「提案の切り口」アイデア（3つ）\n### ⚠️ ヒアリング必須項目・注意点"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [660, 0],
+      "id": "gemini-sales-researcher",
+      "name": "Gemini (インサイドセールス)",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "your-email@example.com",
+        "subject": "=【商談準備完了】{{ $('Form Trigger').item.json['企業名'] }} 様の分析レポート",
+        "emailType": "text",
+        "message": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [880, -100],
+      "id": "send-email",
+      "name": "Gmail通知",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "お問い合わせを受け付けました。担当者よりご連絡いたします。（※この裏側でAIによる商談準備シートが生成され、営業担当へメール送信されました）",
+        "options": {}
+      },
+      "id": "respond-to-webhook",
+      "name": "ブラウザへ応答",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 100]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "対象サイトへアクセス",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "対象サイトへアクセス": {
+      "main": [
+        [
+          {
+            "node": "サイトのテキスト抽出",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "サイトのテキスト抽出": {
+      "main": [
+        [
+          {
+            "node": "Gemini (インサイドセールス)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (インサイドセールス)": {
+      "main": [
+        [
+          {
+            "node": "Gmail通知",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ブラウザへ応答",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
