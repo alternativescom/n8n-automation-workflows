@@ -42,6 +42,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**29. AI Accounting Assistant**](./29-ai-accounting-assistant) | **Finance & Compliance.** Analyzes receipt images uploaded via a web form. Gemini acts as a strict, veteran accounting chief to suggest account titles and advise on tax compliance and necessary evidence. | Form Trigger, Gemini (Vision) |
 | [**30. AI Labor Alert Bot**](./30-ai-labor-alert-bot) | **HR & Compliance.** Analyzes late-night/holiday chat logs to detect hidden overtime or mental health risks, sending actionable alerts to managers. | Schedule, Gemini, Gmail |
 | [**31. Shadow IT Detector**](./31-shadow-it-detector) | **Security & Audit.** Provides a web form to upload credit card statement CSVs. Gemini analyzes the expenses, detects unauthorized SaaS usage (Shadow IT) against a whitelist, and emails a compliance report. | Form Trigger, CSV Read, Gemini, Gmail |
+| [**32. AI Sales Assistant**](./32-ai-sales-assistant) | **Sales & Marketing.** Triggers on a new form inquiry, automatically scrapes the prospect's website, and uses Gemini to generate a 1-minute sales prep sheet with strategic pitch ideas. | Form Trigger, HTTP Request, HTML Extract, Gemini, Gmail |
 
 *(More workflows are currently under development. Target: 20+)*
 
