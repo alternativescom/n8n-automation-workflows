@@ -1,0 +1,132 @@
+{
+  "name": "お怒り・解約リスク自動検知ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "event": "messageReceived",
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ]
+        },
+        "options": {}
+      },
+      "id": "gmail-trigger",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたはIT企業の「ベテランのカスタマーサクセスマネージャー（CS責任者）」です。\n顧客から届いた以下の【問い合わせメール】の文章から、顧客の「感情（怒り・不満の度合い）」と「解約（チャーン）リスク」を分析し、営業・CSチーム向けの緊急アラートレポートを作成してください。\n\n【問い合わせメール】\n* 送信者: {{ $json.from.value[0].name || $json.from.value[0].address }}\n* 件名: {{ $json.subject }}\n* 本文: {{ $json.textPlain || $json.snippet }}\n\n【出力フォーマット】\n以下の構成でレポートを作成してください。\n\n### 🚨 クレーム・解約リスク判定\n* **お怒りレベル:** 【🔴激怒 / 🟡不満 / 🟢通常】\n* **解約（チャーン）リスク:** 【🔴高（即時対応必須） / 🟡中 / 🟢低】\n\n### 🔍 顧客の感情と課題の分析\n（なぜ顧客が怒っているのか、文面から読み取れる一番のペインポイントは何かを簡潔に分析してください）\n\n### 💡 CS責任者からの「初動対応」指示\n（「まずは誰が・どういう手段（電話/メール）で・何を伝えるべきか」、二次クレームを防ぐための具体的な初動アクションを3ステップで指示してください）"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [220, 0],
+      "id": "gemini-cs-manager",
+      "name": "Gemini (CS責任者)",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.content }}",
+        "options": {}
+      },
+      "id": "markdown-to-html",
+      "name": "MarkdownをHTMLに変換",
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "sendTo": "your-email@example.com",
+        "subject": "=【🚨至急アラート】{{ $('Gmail Trigger').item.json.from.value[0].name || $('Gmail Trigger').item.json.from.value[0].address }}様よりクレームの兆候",
+        "emailType": "html",
+        "message": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [660, 0],
+      "id": "send-email",
+      "name": "Gmail通知",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gemini (CS責任者)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (CS責任者)": {
+      "main": [
+        [
+          {
+            "node": "MarkdownをHTMLに変換",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MarkdownをHTMLに変換": {
+      "main": [
+        [
+          {
+            "node": "Gmail通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
