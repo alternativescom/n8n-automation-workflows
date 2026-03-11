@@ -1,0 +1,141 @@
+{
+  "name": "競合PR監視＆対抗策提案ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "毎朝9時に実行",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://prtimes.jp/company/000000000/rss.xml"
+      },
+      "id": "rss-read",
+      "name": "競合のRSSを取得",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたはITコンサルティング企業で働く「敏腕マーケティング責任者（CMO）」です。\n競合他社が発信した以下の【プレスリリース情報】を分析し、自社への影響と対抗策をレポートにまとめてください。\n\n【プレスリリース情報】\n* タイトル: {{ $json.title }}\n* 配信日時: {{ $json.isoDate }}\n* 内容要約: {{ $json.contentSnippet || $json.content }}\n\n【出力フォーマット】\n以下の構成でレポートを作成してください。\n\n### 🚨 競合リリース検知と脅威レベル\n* **脅威レベル:** 【🔴高（即時対応が必要） / 🟡中（注視が必要） / 🟢低（影響軽微）】\n* **リリースの要点:** （1〜2行で簡潔に）\n\n### 🔍 自社（DX推進・自動化コンサル）への影響分析\n（このリリースが、自社のビジネスや顧客獲得にどのようなネガティブ・ポジティブな影響を与えるか分析してください）\n\n### 💡 CMOからの「対抗策」アイデア3選\n（「キャンペーンの打ち出し」「既存顧客へのフォロー強化」「機能の差別化アピール」など、明日からマーケティング・営業チームが実行できる具体的な対抗策を3つ提案してください）"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [440, 0],
+      "id": "gemini-cmo",
+      "name": "Gemini (CMO)",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.content }}",
+        "options": {}
+      },
+      "id": "markdown-to-html",
+      "name": "MarkdownをHTMLに変換",
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "sendTo": "your-email@example.com",
+        "subject": "【🚨競合アラート】新規リリース検知と対抗策のご提案",
+        "emailType": "html",
+        "message": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [880, 0],
+      "id": "send-email",
+      "name": "Gmail通知",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "毎朝9時に実行": {
+      "main": [
+        [
+          {
+            "node": "競合のRSSを取得",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "競合のRSSを取得": {
+      "main": [
+        [
+          {
+            "node": "Gemini (CMO)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (CMO)": {
+      "main": [
+        [
+          {
+            "node": "MarkdownをHTMLに変換",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MarkdownをHTMLに変換": {
+      "main": [
+        [
+          {
+            "node": "Gmail通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
