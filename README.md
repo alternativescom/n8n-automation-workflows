@@ -44,6 +44,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**31. Shadow IT Detector**](./31-shadow-it-detector) | **Security & Audit.** Provides a web form to upload credit card statement CSVs. Gemini analyzes the expenses, detects unauthorized SaaS usage (Shadow IT) against a whitelist, and emails a compliance report. | Form Trigger, CSV Read, Gemini, Gmail |
 | [**32. AI Sales Assistant**](./32-ai-sales-assistant) | **Sales & Marketing.** Triggers on a new form inquiry, automatically scrapes the prospect's website, and uses Gemini to generate a 1-minute sales prep sheet with strategic pitch ideas. | Form Trigger, HTTP Request, HTML Extract, Gemini, Gmail |
 | [**33. Churn Risk Detector**](./33-churn-risk-detector) | **Customer Success.** Monitors incoming emails using Gmail Trigger, uses Gemini to detect customer anger or churn risk, converts the analysis to HTML, and sends priority alerts to managers. | Gmail Trigger, Gemini, Markdown, Gmail |
+| [**34. Competitor PR Monitor**](./34-competitor-pr-monitor) | **Marketing & Strategy.** Regularly fetches competitor press releases via RSS. Gemini acts as a CMO to analyze the threat level, generate strategic countermeasure ideas, and email the report in HTML format. | Schedule, RSS Read, Gemini, Markdown, Gmail |
 
 *(More workflows are currently under development. Target: 20+)*
 
