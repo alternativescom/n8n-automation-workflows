@@ -1,0 +1,134 @@
+{
+  "name": "【マネジメント支援】日報AI集計＆アクション提案ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 19 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-node",
+      "name": "平日19時に実行",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "history",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_DAILY_REPORT_CHANNEL_ID",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "filters": {
+          "latest": "={{ $today }}",
+          "oldest": "={{ $today.minus({ days: 1 }) }}"
+        }
+      },
+      "id": "slack-read-node",
+      "name": "Slack (日報取得)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Slackから取得した複数のメッセージを1つのテキストにまとめる\nconst messages = $input.all();\nif (messages.length === 0) {\n  return [{ json: { compiledReports: \"本日の日報はありませんでした。\" } }];\n}\n\nlet compiledText = \"\";\nmessages.forEach((msg, index) => {\n  // 実際の運用ではユーザーIDから名前を引く処理を追加するとより親切です\n  const text = msg.json.text || \"\";\n  compiledText += `【報告 ${index + 1}】\\n${text}\\n\\n`;\n});\n\nreturn [{ json: { compiledReports: compiledText } }];"
+      },
+      "id": "code-format-node",
+      "name": "日報テキスト結合 (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは優秀なマネージャーの右腕（コンサルタント）です。\n以下の【本日の日報一覧】を読み込み、マネージャー向けに以下の構成で分析レポートを作成してください。Markdown形式で読みやすく装飾してください。\n\n【出力構成】\n1. 📊 チーム全体のコンディション（今日のムードや進捗の全体感）\n2. 🚨 要注意サイン（顧客のクレームの兆候、メンバーの疲労やモチベーション低下などがあればピックアップ）\n3. 💡 明日のアクション提案（マネージャーが明日、誰にどのような声かけやフォローをすべきか、具体的なアクションを3つ提案）\n\n【本日の日報一覧】\n{{ $json.compiledReports }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-analyze-node",
+      "name": "Gemini (日報分析)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_MANAGER_DM_ID",
+        "text": "=お疲れ様です！本日の日報を分析しました。\n\n{{ $json.content }}",
+        "otherOptions": {}
+      },
+      "id": "slack-notify-node",
+      "name": "Slack (マネージャーへ通知)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [880, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "平日19時に実行": {
+      "main": [
+        [
+          {
+            "node": "Slack (日報取得)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack (日報取得)": {
+      "main": [
+        [
+          {
+            "node": "日報テキスト結合 (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "日報テキスト結合 (Code)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (日報分析)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (日報分析)": {
+      "main": [
+        [
+          {
+            "node": "Slack (マネージャーへ通知)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
