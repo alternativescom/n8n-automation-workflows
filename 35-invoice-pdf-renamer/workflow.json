@@ -1,0 +1,137 @@
+{
+  "name": "【電帳法対応】PDF請求書リネーム＆自動保存ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "event": "messageReceived",
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ],
+          "q": "has:attachment filename:pdf"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "id": "gmail-trigger-node",
+      "name": "Gmail (PDF受信)",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは優秀な経理アシスタントです。\n添付された請求書のPDFを読み取り、以下の3つの情報を抽出して、必ずJSON形式のみで出力してください。\n\n{\n  \"date\": \"YYYYMMDD\",\n  \"company\": \"取引先企業名\",\n  \"amount\": \"金額の数字のみ\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-vision-node",
+      "name": "Gemini (PDF解析)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\nlet cleanText = text.trim();\n\n// 最初の { から 最後の } までを切り出して確実にJSON化する安全な処理\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nconst data = JSON.parse(cleanText);\n\n// 抽出したデータから新しいファイル名を生成（記号を使わず安全に結合）\nconst newFileName = data.date + '_' + data.company + '_' + data.amount + '.pdf';\n\nreturn {\n  newFileName: newFileName,\n  companyName: data.company,\n  amount: data.amount\n};"
+      },
+      "id": "code-rename-node",
+      "name": "ファイル名生成 (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "fileId": "YOUR_GOOGLE_DRIVE_FOLDER_ID",
+        "binaryPropertyName": "attachment_0",
+        "name": "={{ $json.newFileName }}",
+        "options": {}
+      },
+      "id": "google-drive-node",
+      "name": "Google Drive (保存)",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_SLACK_CHANNEL_ID",
+        "text": "=🧾 新しい請求書を処理しました！\n* ファイル名: {{ $json.newFileName }}\n* ドライブに保存完了しました。",
+        "otherOptions": {}
+      },
+      "id": "slack-notify-node",
+      "name": "Slack (通知)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [880, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail (PDF受信)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (PDF解析)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (PDF解析)": {
+      "main": [
+        [
+          {
+            "node": "ファイル名生成 (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ファイル名生成 (Code)": {
+      "main": [
+        [
+          {
+            "node": "Google Drive (保存)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive (保存)": {
+      "main": [
+        [
+          {
+            "node": "Slack (通知)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
