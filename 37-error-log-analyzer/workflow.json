@@ -1,0 +1,77 @@
+{
+  "name": "【情シス支援】エラーログ自動翻訳＆解決策提示ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "error-alert-webhook",
+        "options": {}
+      },
+      "id": "webhook-trigger-node",
+      "name": "Webhook (エラー受信)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは経験豊富なSRE（サイト信頼性エンジニア）です。\nシステムから以下の【エラーログ】がWebhook経由で通知されました。若手エンジニアや非エンジニアの情シス担当者でも状況を理解し、迅速に初動対応できるよう、以下の構成でレポートを作成してください。\n\n【出力構成】\n1. 🚨 エラーの概要（専門用語を極力避けた、分かりやすい日本語訳）\n2. 🔍 考えられる原因（なぜこのエラーが起きたのか、ログからの推測）\n3. 🛠️ すぐに実行すべき解決策（確認すべき設定やサーバーコマンドなど、具体的なアクションを3つ提示）\n\n【エラーログ】\n{{ JSON.stringify($json.body) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-sre-node",
+      "name": "Gemini (エラー解析)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_DEV_CHANNEL_ID",
+        "text": "=🚨 *システムエラーを検知しました*\n\n{{ $json.content }}",
+        "otherOptions": {}
+      },
+      "id": "slack-alert-node",
+      "name": "Slack (エンジニアへ通知)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [440, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook (エラー受信)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (エラー解析)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (エラー解析)": {
+      "main": [
+        [
+          {
+            "node": "Slack (エンジニアへ通知)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
