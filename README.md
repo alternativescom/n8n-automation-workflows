@@ -48,6 +48,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**35. Invoice PDF Renamer**](./35-invoice-pdf-renamer) | **Accounting & Legal.** Automates the painful process of renaming PDF invoices for Dencho-ho (Electronic Bookkeeping Law). Uses Gemini's multimodal capabilities to extract Date, Company, and Amount from PDFs, then saves to Google Drive. | Gmail, Gemini, Code, Google Drive, Slack |
 | [**36. Daily Report AI Analyzer**](./36-daily-report-analyzer) | **Management & HR.** Aggregates daily reports and uses Gemini to analyze team mood, flag risks, and suggest actionable management tasks. Slack & MS Teams compatible. | Slack (or Teams), Code, Gemini |
 | [**37. Error Log AI Analyzer**](./37-error-log-analyzer) | **IT Admin & DevOps.** Receives system error logs via Webhook, uses Gemini to act as an SRE to translate cryptic logs into Japanese, explains the root cause, and suggests 3 immediate solutions via Slack. | Webhook, Gemini, Slack |
+| [**38. Tax Closing Hotline Bot**](./38-tax-closing-hotline) | **Accounting & Backoffice.** Acts as an AI bridge between employees and tax accountants. Analyzes Slack messages/receipts and automatically routes them to either "ask user for more info", "forward to accountant", or "save to Google Drive". | Slack, Gemini, Switch, Gmail, Drive |
 
 *(More workflows are currently under development. Target: 20+)*
 
