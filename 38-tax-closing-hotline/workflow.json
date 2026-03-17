@@ -1,0 +1,336 @@
+{
+  "name": "【決算対応】税理士ホットライン＆資料整理ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "id": "7037e5a2-56a0-48dc-8772-bfc0da204e61",
+      "name": "Slack (決算ホットライン)",
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        32
+      ],
+      "webhookId": "edfa1533-2843-4c62-8a73-c5ad48c586dc",
+      "credentials": {
+        "slackApi": {
+          "id": "od6BXoqolXdKRhXi",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは優秀な経理アシスタントです。\nユーザーからSlackに投稿されたテキストおよび画像（領収書、税務署からの通知、質問など）を解析し、以下の3つのステータスから最も適切なものを1つ選び、必ずJSON形式で出力してください。\n\n【ステータスの定義】\n1. \"NEEDS_INFO\"：税理士に質問したいようだが、情報（金額、相手先、目的など）が不足している場合。\n2. \"READY_TO_FORWARD\"：情報が揃っており、税理士の判断や回答が必要な質問・書類の場合。\n3. \"FILE_ONLY\"：税理士への質問ではなく、単なる領収書や請求書など、決算資料として保管するだけで良い場合。\n\n【出力JSONフォーマット】\n{\n  \"status\": \"NEEDS_INFO\" または \"READY_TO_FORWARD\" または \"FILE_ONLY\",\n  \"reply_to_user\": \"Slackでユーザーに返信するメッセージ。不足情報の指摘など\",\n  \"message_to_accountant\": \"税理士に転送する場合の要約文（転送しない場合は空文字）\",\n  \"file_name\": \"ファイルがある場合、保存用のファイル名（例：YYYYMMDD_書類種類_会社名.pdf）\"\n}\n\nユーザーの投稿：\n{{ $json.text || 'テキストなし' }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "5f8b3619-01bf-4700-b094-83c18435f4e4",
+      "name": "Gemini (意図と画像の解析)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -736,
+        32
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nconst data = JSON.parse(cleanText);\nreturn {\n  status: data.status,\n  reply_to_user: data.reply_to_user,\n  message_to_accountant: data.message_to_accountant,\n  file_name: data.file_name\n};"
+      },
+      "id": "b5625ed3-b068-4c67-8ad6-7d63d629d65c",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.status }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "NEEDS_INFO"
+            },
+            {
+              "value2": "READY_TO_FORWARD",
+              "output": 1
+            },
+            {
+              "value2": "FILE_ONLY",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "id": "185b2b44-955e-4173-ae83-03f41f684788",
+      "name": "Switch (交通整理)",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#",
+          "mode": "name"
+        },
+        "text": "=⚠️ *情報が不足しています*\n{{ $json.reply_to_user }}",
+        "otherOptions": {}
+      },
+      "id": "86e66302-fada-4374-ae14-351fe9df3cec",
+      "name": "Slack (不足情報)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        -160
+      ],
+      "webhookId": "5146a3ee-3b8d-41ab-97a9-fd42cb6a25f4",
+      "credentials": {
+        "slackApi": {
+          "id": "od6BXoqolXdKRhXi",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "tax_accountant@example.com",
+        "subject": "【決算関連】クライアントからのご質問・資料共有",
+        "message": "={{ $json.message_to_accountant }}\n\n※添付ファイルがある場合はご確認ください。",
+        "options": {}
+      },
+      "id": "9fdcc8a3-e136-45fe-8da7-39a26706f128",
+      "name": "Gmail (税理士転送)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        32
+      ],
+      "webhookId": "fae2eae2-2000-4a37-adf2-56c54968438f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qVmR1ytFIlpRVwxW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#",
+          "mode": "name"
+        },
+        "text": "=✅ *税理士の先生に転送しました！*\n（AIコメント：{{ $json.reply_to_user }}）",
+        "otherOptions": {}
+      },
+      "id": "35a23df1-c615-4854-8cca-dd06496e4df5",
+      "name": "Slack (連携完了)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        32
+      ],
+      "webhookId": "4483007c-7173-4b44-bd47-36a0d8946463",
+      "credentials": {
+        "slackApi": {
+          "id": "od6BXoqolXdKRhXi",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.file_name || '決算資料.pdf' }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "bd47cf90-a3f1-4c30-9547-e49e466479ac",
+      "name": "Google Drive (保管)",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        64,
+        224
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "CTre7yYwzB02bJrT",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#general",
+          "mode": "name"
+        },
+        "text": "=📁 *ドライブに保管しました*\n税理士への転送は行っていません。\n（AIコメント：{{ $json.reply_to_user }}）",
+        "otherOptions": {}
+      },
+      "id": "27855dfb-f69c-4e00-8a73-cb1038601a81",
+      "name": "Slack (保管完了)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        224
+      ],
+      "webhookId": "81be193b-2733-4ab1-8b49-951875d372ce",
+      "credentials": {
+        "slackApi": {
+          "id": "od6BXoqolXdKRhXi",
+          "name": "Slack account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Slack (決算ホットライン)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (意図と画像の解析)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (意図と画像の解析)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "Switch (交通整理)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch (交通整理)": {
+      "main": [
+        [
+          {
+            "node": "Slack (不足情報)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail (税理士転送)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Drive (保管)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail (税理士転送)": {
+      "main": [
+        [
+          {
+            "node": "Slack (連携完了)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive (保管)": {
+      "main": [
+        [
+          {
+            "node": "Slack (保管完了)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "45a1fdc5-58c5-44db-8f7c-3dec2ceb87d1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
+  },
+  "id": "ncjB9eGttcRhy6WJ",
+  "tags": []
+}
