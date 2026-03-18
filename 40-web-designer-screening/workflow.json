@@ -1,0 +1,97 @@
+{
+  "name": "【採用支援】Webデザイナー特化型 AIスクリーニングボット",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "designer-application",
+        "options": {}
+      },
+      "id": "webhook-trigger-node",
+      "name": "Webhook (応募フォーム受信)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたはWeb制作会社の厳格かつ優秀な「シニアアートディレクター（採用責任者）」です。\n以下の【応募者データ】を読み込み、Webデザイナーとしてのスキルとポテンシャルを一次スクリーニングし、JSON形式で評価レポートを出力してください。\n\n【評価のポイント】\n1. ツール習熟度（FigmaやAdobe CCなどを実務レベルで使いこなせるか）\n2. UI/UXの視点（単に「綺麗な絵」を描くのではなく、ユーザー導線やコンバージョンを意識しているか）\n3. 実装への理解（HTML/CSSなどのコーディング知識があり、エンジニアと円滑に連携できそうか）\n\n【出力JSONフォーマット】\n{\n  \"score\": \"100点満点での総合評価スコア（数値のみ）\",\n  \"evaluation_summary\": \"シニアアートディレクターとしての総評（100文字程度）\",\n  \"strengths\": \"強み・評価できるポイント（箇条書きで3点）\",\n  \"concerns\": \"懸念点・面接で深掘りすべきポイント（箇条書きで2点）\",\n  \"judgment\": \"【A: 是非面接したい / B: ポートフォリオ次第で検討 / C: 見送り】のいずれか\"\n}\n\n【応募者データ】\n氏名: {{ $json.body.name || 'ダミー太郎' }}\n経験年数: {{ $json.body.experience_years || '3年' }}\n使用ツール: {{ $json.body.tools || 'Figma, Illustrator, Photoshop, HTML/CSS少し' }}\n自己PR・実績: {{ $json.body.pr_text || '前職ではLPのデザインからコーディングまでを担当しました。特にFigmaを用いたコンポーネント指向のUI設計が得意で、エンジニアとの連携をスムーズに行うことができます。ユーザーの目線に立った、コンバージョンに繋がるデザインを心がけています。' }}\nポートフォリオURL: {{ $json.body.portfolio_url || 'https://example.com/portfolio' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-screening-node",
+      "name": "Gemini (アートディレクター評価)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nconst parsed = JSON.parse(cleanText);\n\n// Webhookで受け取った元の応募者情報\nconst applicantData = $('Webhook (応募フォーム受信)').item.json.body || {\n  name: \"ダミー太郎\",\n  portfolio_url: \"https://example.com/portfolio\"\n};\n\nreturn {\n  ...parsed,\n  applicant_name: applicantData.name,\n  portfolio_url: applicantData.portfolio_url\n};"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_HR_CHANNEL_ID",
+        "text": "=📝 *【Webデザイナー応募】新規エントリーのAI一次評価*\n\n*氏名:* {{ $json.applicant_name }}\n*ポートフォリオ:* {{ $json.portfolio_url }}\n\n*■ AIアートディレクターの判定:*\n*【 評価: {{ $json.judgment }} / スコア: {{ $json.score }}点 】*\n\n*■ 総評:*\n{{ $json.evaluation_summary }}\n\n*✨ 強み:*\n{{ $json.strengths }}\n\n*⚠️ 面接での確認事項（懸念点）:*\n{{ $json.concerns }}\n\n--------------------------------------------------\n採用担当者様、上記スコアを参考に書類選考を進めてください。"
+      },
+      "id": "slack-notify-node",
+      "name": "Slack (採用担当者へ通知)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [660, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook (応募フォーム受信)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (アートディレクター評価)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (アートディレクター評価)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "Slack (採用担当者へ通知)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
