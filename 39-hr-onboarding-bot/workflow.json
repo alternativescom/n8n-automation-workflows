@@ -1,0 +1,136 @@
+{
+  "name": "【HR支援】新入社員オンボーディング＆アカウント発行自動化ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-employee-onboarding",
+        "options": {}
+      },
+      "id": "webhook-trigger-node",
+      "name": "Webhook (人事フォーム受信)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json.body || {\n  firstName: \"Taro\",\n  lastName: \"Yamada\",\n  department: \"営業部\",\n  role: \"フィールドセールス\",\n  personalEmail: \"personal@example.com\"\n};\n\nconst companyEmail = `${data.firstName.toLowerCase()}.${data.lastName.toLowerCase()}@yourcompany.com`;\nconst tempPassword = Math.random().toString(36).slice(-8) + \"Aa1!\";\n\nreturn {\n  ...data,\n  companyEmail: companyEmail,\n  tempPassword: tempPassword\n};"
+      },
+      "id": "code-generate-account-node",
+      "name": "アカウント情報生成 (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 200]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは人事部門の優秀なアシスタントです。\n以下の新入社員データをもとに、①本人に送る「温かい歓迎メールの本文」と、②Slackの全社チャンネルで紹介するための「ワクワクする紹介文」を作成し、JSON形式で出力してください。\n\n【新入社員データ】\n氏名：{{ $json.lastName }} {{ $json.firstName }}\n配属部署：{{ $json.department }}\n役割：{{ $json.role }}\n\n【出力JSONフォーマット】\n{\n  \"welcome_email\": \"本人へ送付する歓迎メールの本文\",\n  \"slack_intro\": \"Slackの全社向けの紹介メッセージ\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-onboarding-node",
+      "name": "Gemini (歓迎メッセージ生成)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [440, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nconst parsed = JSON.parse(cleanText);\n\nconst accountData = $('アカウント情報生成 (Code)').item.json;\n\nreturn {\n  ...accountData,\n  welcome_email: parsed.welcome_email,\n  slack_intro: parsed.slack_intro\n};"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース＆データ結合 (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 200]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.personalEmail }}",
+        "subject": "【入社のご案内】アカウント発行とオンボーディングについて",
+        "message": "={{ $json.welcome_email }}\n\n--------------------------------------------------\n■ あなたの社内アカウント情報\n--------------------------------------------------\n・社用メールアドレス： {{ $json.companyEmail }}\n・初期パスワード： {{ $json.tempPassword }}\n\n※ログイン後、速やかにパスワードを変更してください。\n\n本日はご入社、本当におめでとうございます！\n人事部一同",
+        "options": {}
+      },
+      "id": "gmail-welcome-node",
+      "name": "Gmail (本人へアカウント送信)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [880, 100]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_GENERAL_CHANNEL_ID",
+        "text": "=🎉 *新しい仲間が加わりました！*\n\n{{ $json.slack_intro }}\n\nみんなでスタンプを押して歓迎しましょう！🙌"
+      },
+      "id": "slack-announce-node",
+      "name": "Slack (全社へ新入社員紹介)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [880, 300]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook (人事フォーム受信)": {
+      "main": [
+        [
+          {
+            "node": "アカウント情報生成 (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "アカウント情報生成 (Code)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (歓迎メッセージ生成)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (歓迎メッセージ生成)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース＆データ結合 (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース＆データ結合 (Code)": {
+      "main": [
+        [
+          {
+            "node": "Gmail (本人へアカウント送信)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Slack (全社へ新入社員紹介)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
