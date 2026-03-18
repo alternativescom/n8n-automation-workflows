@@ -49,6 +49,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**36. Daily Report AI Analyzer**](./36-daily-report-analyzer) | **Management & HR.** Aggregates daily reports and uses Gemini to analyze team mood, flag risks, and suggest actionable management tasks. Slack & MS Teams compatible. | Slack (or Teams), Code, Gemini |
 | [**37. Error Log AI Analyzer**](./37-error-log-analyzer) | **IT Admin & DevOps.** Receives system error logs via Webhook, uses Gemini to act as an SRE to translate cryptic logs into Japanese, explains the root cause, and suggests 3 immediate solutions via Slack. | Webhook, Gemini, Slack |
 | [**38. Tax Closing Hotline Bot**](./38-tax-closing-hotline) | **Accounting & Backoffice.** Acts as an AI bridge between employees and tax accountants. Analyzes Slack messages/receipts and automatically routes them to either "ask user for more info", "forward to accountant", or "save to Google Drive". | Slack, Gemini, Switch, Gmail, Drive |
+| [**39. HR Onboarding Bot**](./39-hr-onboarding-bot) | **HR & Admin.** Automates new employee onboarding. Generates mock account details, uses Gemini to write personalized welcome emails and Slack introductions, then sends them simultaneously. | Webhook, Code, Gemini, Gmail, Slack |
 
 *(More workflows are currently under development. Target: 20+)*
 
