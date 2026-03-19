@@ -1,0 +1,116 @@
+{
+  "name": "【EC支援】SEO特化・商品説明の自動生成ボット(Chatwork版)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "ec-product-generator",
+        "formTitle": "✨ 商品説明ジェネレーター",
+        "formDescription": "商品の写真（またはメーカー提供の画像）をアップロードし、簡単な特徴を入力してください。ECサイト（Shopify/BASE等）用の魅力的な商品説明を自動生成します。",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "商品画像",
+              "fieldType": "file",
+              "acceptFileTypes": "image/*",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "商品の簡単な特徴やターゲット（任意）",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "form-trigger-node",
+      "name": "n8n Form Trigger (商品画像アップロード)",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは優秀なECサイトの「プロのセールスライター兼SEOスペシャリスト」です。\n添付された商品画像と、ユーザーからのメモ（{{ $json['商品の簡単な特徴やターゲット（任意）'] || '特になし' }}）をもとに、ShopifyやBASE等のECサイトでそのまま使える魅力的な商品説明文を作成し、JSON形式で出力してください。\n\n【出力JSONフォーマット】\n{\n  \"product_title\": \"SEOを意識した魅力的な商品名（30文字以内）\",\n  \"catchcopy\": \"思わずクリックしたくなるキャッチコピー（50文字以内）\",\n  \"description\": \"商品の魅力、ターゲットの悩み解決、ベネフィットを伝える詳細な説明文（HTMLタグ不要、改行で見やすく）\",\n  \"seo_keywords\": \"SEO対策用の検索キーワード（カンマ区切りで5つ）\",\n  \"hashtags\": \"InstagramやXの販促で使えるハッシュタグ（5つ）\"\n}"
+            }
+          ]
+        },
+        "inputType": "binary",
+        "binaryPropertyName": "商品画像",
+        "options": {}
+      },
+      "id": "gemini-writer-node",
+      "name": "Gemini (Vision＆ライティング)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nreturn JSON.parse(cleanText);"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "create",
+        "roomId": "YOUR_ROOM_ID",
+        "body": "=[info][title]🛍️ 新しい商品説明が生成されました！[/title]\nこのままShopifyやBASEの商品登録画面にコピペしてご利用ください。\n\n【商品名】\n{{ $json.product_title }}\n\n【キャッチコピー】\n{{ $json.catchcopy }}\n\n【商品説明】\n{{ $json.description }}\n[hr]🔍 SEOキーワード: {{ $json.seo_keywords }}\n🏷️ ハッシュタグ: {{ $json.hashtags }}[/info]"
+      },
+      "id": "chatwork-notify-node",
+      "name": "Chatwork (通知)",
+      "type": "n8n-nodes-chatwork.chatwork",
+      "typeVersion": 1,
+      "position": [660, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "n8n Form Trigger (商品画像アップロード)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (Vision＆ライティング)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (Vision＆ライティング)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "Chatwork (通知)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
