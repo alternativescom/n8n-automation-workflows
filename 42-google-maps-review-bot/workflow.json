@@ -1,0 +1,149 @@
+{
+  "name": "【店舗支援】Googleマップ口コミ対応＆炎上防止ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-gmb-review",
+        "options": {}
+      },
+      "id": "webhook-trigger-node",
+      "name": "Webhook (口コミ受信)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 200]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは実店舗ビジネス（飲食店やサロンなど）の「優秀なカスタマーサクセス・PR担当者」です。\n以下のGoogleマップに投稿された口コミ（レビュー）を分析し、評価のトーンを判定した上で、店舗オーナーがそのままコピペして使える「プロフェッショナルな返信文（ドラフト）」を作成し、JSON形式で出力してください。\n\n【返信文の作成ルール】\n・高評価（星4〜5）の場合：来店への感謝、口コミで触れられた点への共感、次回のおすすめメニューやサービスを交え、再来店（リピート）を促す温かい文章にすること。\n・低評価（星1〜3）の場合：絶対に反論せず、不快な思いをさせたことへの誠実な謝罪と、事実確認・改善に努める姿勢を示すこと（炎上を防ぐための「神対応」を意識）。\n\n【出力JSONフォーマット】\n{\n  \"sentiment\": \"POSITIVE または NEGATIVE\",\n  \"analysis\": \"なぜこの評価になったのか、顧客の感情や要因の分析（50文字程度）\",\n  \"reply_draft\": \"Googleマップにそのまま投稿できる、丁寧で適切な返信文案\"\n}\n\n【口コミデータ】\n店舗名：{{ $json.body.store_name || 'ダミー店舗' }}\n評価（星）：{{ $json.body.rating || '1' }} / 5\n投稿者名：{{ $json.body.reviewer_name || '匿名ユーザー' }}\n口コミ内容：{{ $json.body.review_text || '料理が出るのが遅すぎます。店員の態度も素っ気なくて最悪でした。二度と行きません。' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-analyze-node",
+      "name": "Gemini (口コミ分析と返信生成)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [220, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nconst parsed = JSON.parse(cleanText);\n\n// Webhookで受け取った元のデータ\nconst reviewData = $('Webhook (口コミ受信)').item.json.body || {\n  store_name: \"ダミー店舗\",\n  rating: 1,\n  reviewer_name: \"匿名ユーザー\",\n  review_text: \"料理が出るのが遅すぎます。店員の態度も素っ気なくて最悪でした。二度と行きません。\"\n};\n\nreturn {\n  ...parsed,\n  ...reviewData\n};"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 200]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.sentiment }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "POSITIVE",
+              "output": 0
+            },
+            {
+              "value2": "NEGATIVE",
+              "output": 1
+            }
+          ]
+        }
+      },
+      "id": "switch-node",
+      "name": "Switch (感情による分岐)",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [660, 200]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_STORE_MANAGER_CHANNEL",
+        "text": "=🎉 *【高評価】新しい口コミが投稿されました！*\n\n*店舗:* {{ $json.store_name }}\n*評価:* ⭐ {{ $json.rating }}\n*投稿者:* {{ $json.reviewer_name }}\n*内容:*\n> {{ $json.review_text }}\n\n---\n*💡 AI分析:* {{ $json.analysis }}\n\n*📝 返信ドラフト（コピペしてご活用ください）:*\n```\n{{ $json.reply_draft }}\n```"
+      },
+      "id": "slack-positive-node",
+      "name": "Slack (高評価の通知)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [900, 100]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_STORE_MANAGER_CHANNEL",
+        "text": "=🚨 *【要対応】低評価の口コミが投稿されました*\n※炎上を防ぐため、迅速かつ冷静な対応をお願いします。\n\n*店舗:* {{ $json.store_name }}\n*評価:* ⭐ {{ $json.rating }}\n*投稿者:* {{ $json.reviewer_name }}\n*内容:*\n> {{ $json.review_text }}\n\n---\n*⚠️ AI分析:* {{ $json.analysis }}\n\n*📝 謝罪・対応用 返信ドラフト（コピペしてご活用ください）:*\n```\n{{ $json.reply_draft }}\n```"
+      },
+      "id": "slack-negative-node",
+      "name": "Slack (低評価の警告通知)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [900, 300]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook (口コミ受信)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (口コミ分析と返信生成)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (口コミ分析と返信生成)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "Switch (感情による分岐)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch (感情による分岐)": {
+      "main": [
+        [
+          {
+            "node": "Slack (高評価の通知)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack (低評価の警告通知)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
