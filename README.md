@@ -53,6 +53,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**40. Web Designer Screening AI**](./40-web-designer-screening) | **HR & Recruiting.** A specialized AI screening bot for Web Designers. Gemini acts as a Senior Art Director to evaluate applicants' UI/UX skills and tool proficiency, then sends a detailed interview prep report with scores and specific questions to Slack. | Webhook, Gemini, Code, Slack |
 | [**41. Virtual Partner Reviewer**](./41-virtual-partner-reviewer) | **Productivity & DevTools.** A multi-persona AI reviewer for solo engineers and small teams. Posts a draft/code to Slack, and Gemini replies in a thread with feedback from 3 perspectives: Senior Engineer, Business Client, and Editor. | Slack, Gemini, Code |
 | [**42. Google Maps Review Bot**](./42-google-maps-review-bot) | **Marketing & CS.** Analyzes Google Maps reviews using Gemini. Automatically routes based on sentiment and generates a professional reply draft to prevent flaming. *Notification node can be easily replaced with LINE.* | Webhook, Gemini, Code, Switch, Slack |
+| [**43. AI Receipt Categorizer**](./43-ai-receipt-categorizer) | **Accounting & DX.** A fully automated pipeline inspired by TaxHacker. Uses Gemini to parse raw OCR text from receipts, infers accounting categories based on custom company rules, and outputs structured JSON. | Webhook, Gemini, Code, Slack |
 
 *(More workflows are currently under development. Target: 20+)*
 
