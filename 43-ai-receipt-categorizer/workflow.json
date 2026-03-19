@@ -1,0 +1,97 @@
+{
+  "name": "【経理DX】領収書・請求書のAI自動仕訳＆データ化ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "receipt-processor",
+        "options": {}
+      },
+      "id": "webhook-trigger-node",
+      "name": "Webhook (OCRテキスト受信)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは優秀な「AI税理士・経理アシスタント」です。\n以下の【領収書/レシートのテキストデータ（OCR読み取り結果等）】を解析し、日本の会計基準と自社ルールに則って適切な「勘定科目」を推測し、JSON形式で構造化して出力してください。\n\n【仕訳のルール（例）】\n・カフェや飲食店での1名での利用、または少額の飲食 → 「会議費」または「交際費」\n・タクシー、電車、バスなどの交通機関 → 「旅費交通費」\n・Amazonやヨドバシカメラ等でのPC周辺機器、事務用品 → 「消耗品費」\n・サーバー代、ドメイン代、ソフトウェア利用料 → 「通信費」または「支払手数料」\n・書籍、雑誌、有料note等の購入 → 「新聞図書費」\n\n【出力JSONフォーマット】\n{\n  \"date\": \"YYYY-MM-DD\",\n  \"vendor\": \"支払先（店舗名・サービス名）\",\n  \"amount\": \"金額（数値のみ、カンマなし）\",\n  \"account\": \"推測される勘定科目\",\n  \"reasoning\": \"なぜその勘定科目にしたのかの短い推測理由（AIの思考プロセス）\"\n}\n\n【領収書データ】\n{{ $json.body.raw_text || '2026年3月18日 株式会社アマゾンジャパン Kindle書籍 DXの思考法 2,500円' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-accounting-node",
+      "name": "Gemini (AI自動仕訳エンジン)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nconst parsed = JSON.parse(cleanText);\n\nreturn parsed;"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_ACCOUNTING_CHANNEL",
+        "text": "=🧾 *新しい領収書が自動仕訳されました*\n\n*日付:* {{ $json.date }}\n*支払先:* {{ $json.vendor }}\n*金額:* ¥{{ $json.amount }}\n\n*🏷️ 勘定科目:* `{{ $json.account }}`\n*💡 AIの推測理由:* {{ $json.reasoning }}\n\n---\n※確認後、スプレッドシートや会計ソフトへ転記してください。"
+      },
+      "id": "slack-notify-node",
+      "name": "Slack (経理通知＆確認)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [660, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook (OCRテキスト受信)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (AI自動仕訳エンジン)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (AI自動仕訳エンジン)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "Slack (経理通知＆確認)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
