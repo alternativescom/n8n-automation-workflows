@@ -51,6 +51,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**38. Tax Closing Hotline Bot**](./38-tax-closing-hotline) | **Accounting & Backoffice.** Acts as an AI bridge between employees and tax accountants. Analyzes Slack messages/receipts and automatically routes them to either "ask user for more info", "forward to accountant", or "save to Google Drive". | Slack, Gemini, Switch, Gmail, Drive |
 | [**39. HR Onboarding Bot**](./39-hr-onboarding-bot) | **HR & Admin.** Automates new employee onboarding. Generates mock account details, uses Gemini to write personalized welcome emails and Slack introductions, then sends them simultaneously. | Webhook, Code, Gemini, Gmail, Slack |
 | [**40. Web Designer Screening AI**](./40-web-designer-screening) | **HR & Recruiting.** A specialized AI screening bot for Web Designers. Gemini acts as a Senior Art Director to evaluate applicants' UI/UX skills and tool proficiency, then sends a detailed interview prep report with scores and specific questions to Slack. | Webhook, Gemini, Code, Slack |
+| [**41. Virtual Partner Reviewer**](./41-virtual-partner-reviewer) | **Productivity & DevTools.** A multi-persona AI reviewer for solo engineers and small teams. Posts a draft/code to Slack, and Gemini replies in a thread with feedback from 3 perspectives: Senior Engineer, Business Client, and Editor. | Slack, Gemini, Code |
 
 *(More workflows are currently under development. Target: 20+)*
 
