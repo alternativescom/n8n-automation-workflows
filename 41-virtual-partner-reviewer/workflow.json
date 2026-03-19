@@ -1,0 +1,101 @@
+{
+  "name": "【査読支援】仮想パートナーの多角レビューボット",
+  "nodes": [
+    {
+      "parameters": {
+        "event": "message",
+        "channelIds": [
+          "YOUR_PARTNER_CHANNEL_ID"
+        ],
+        "options": {}
+      },
+      "id": "slack-trigger-node",
+      "name": "Slack (壁打ちチャンネル)",
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは優秀な「仮想パートナー（壁打ち相手）」です。\nユーザーから送られたテキスト（企画書、提案文、コードの設計メモなど）を読み込み、以下の3つのペルソナ（役職）の視点から多角的に査読（レビュー）を行い、必ずJSON形式で出力してください。\n\n【3つのペルソナ】\n1. technical_reviewer (シニアエンジニア): 技術的な実現性、抜け漏れ、リスク、論理的矛盾を指摘する。\n2. business_reviewer (決裁者/クライアント): ビジネス上のメリット、説得力、目的の明確さ、コスト感への疑問などを指摘する。\n3. editor (プロの編集者): 文章の読みやすさ、構成、専門用語の多用、トーン＆マナーの改善点を指摘する。\n\n【出力JSONフォーマット】\n{\n  \"technical_review\": \"シニアエンジニアとしてのフィードバック（箇条書きで2〜3点）\",\n  \"business_review\": \"決裁者としてのフィードバック（箇条書きで2〜3点）\",\n  \"editorial_review\": \"編集者としてのフィードバック（箇条書きで2〜3点）\",\n  \"encouragement\": \"最後に、孤独に作業するユーザーの背中を押す、ポジティブで温かい励ましの一言\"\n}\n\nユーザーの投稿：\n{{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-review-node",
+      "name": "Gemini (3視点での査読)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nconst parsed = JSON.parse(cleanText);\n\nreturn {\n  ...parsed,\n  original_ts: $('Slack (壁打ちチャンネル)').item.json.ts\n};"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "channel": "={{ $('Slack (壁打ちチャンネル)').item.json.channel }}",
+        "text": "=🤖 *仮想パートナーからの査読レポート*\nお疲れ様です！お送りいただいた内容を3つの視点でレビューしました。\n\n*💻 シニアエンジニアの視点（技術・ロジック）*\n{{ $json.technical_review }}\n\n*👔 決裁者の視点（ビジネス・説得力）*\n{{ $json.business_review }}\n\n*📝 編集者の視点（構成・伝わりやすさ）*\n{{ $json.editorial_review }}\n\n---\n*💡 パートナーからの一言*\n_{{ $json.encouragement }}_",
+        "threadTs": "={{ $json.original_ts }}",
+        "otherOptions": {}
+      },
+      "id": "slack-reply-node",
+      "name": "Slack (スレッドへ返信)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [660, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Slack (壁打ちチャンネル)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (3視点での査読)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (3視点での査読)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "Slack (スレッドへ返信)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
