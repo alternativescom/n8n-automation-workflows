@@ -1,0 +1,183 @@
+{
+  "name": "【第45弾】GA4×自社KPI 凄腕ECアナリストボット",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-node",
+      "name": "毎朝9時に実行",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-192, -208]
+    },
+    {
+      "parameters": {
+        "propertyId": {
+          "__rl": true,
+          "value": "YOUR_PROPERTY_ID",
+          "mode": "id"
+        },
+        "metricsGA4": {
+          "metricValues": [{}]
+        },
+        "dimensionsGA4": {
+          "dimensionValues": [{}]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleAnalytics",
+      "typeVersion": 2,
+      "position": [48, -208],
+      "id": "ga4-report-node",
+      "name": "Get a report"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "ga4_data",
+              "value": "【昨日のデータ】セッション数: 2500, 商品詳細ビュー: 1200, カート追加: 360 (カート遷移率30%), 購入完了: 24 (CVR 0.96%)",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "kpi_context",
+              "value": "【自社KPI目標】カート遷移率: 50%以上, CVR: 2.0%以上",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "mock-data-node",
+      "name": "GA4データ＆KPI取得 (※実装時は実ノードに置換)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [48, -32]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは凄腕のECデータアナリストです。\n以下の「GA4の計測データ」と「自社のKPI目標（文脈）」を比較し、課題（ボトルネック）と改善に向けた具体的な仮説・アクションプランをJSON形式で出力してください。\n\n【GA4データ】\n{{ $json.ga4_data }}\n\n【自社KPI目標（文脈）】\n{{ $json.kpi_context }}\n\n【出力JSONフォーマット】\n{\n  \"status\": \"良い/悪い/要注意 のいずれか\",\n  \"bottleneck\": \"KPIと乖離している最大のボトルネック指標\",\n  \"hypothesis\": \"なぜその数値が悪いのかの仮説（凄腕アナリストとしての深い洞察）\",\n  \"action_plan\": \"今日EC担当者が実行すべき具体的な改善アクション\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-analyst-node",
+      "name": "Gemini (ECアナリスト)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [256, -208]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nreturn JSON.parse(cleanText);"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [608, -208]
+    },
+    {
+      "parameters": {
+        "resource": "Room",
+        "operation": "sendMessage",
+        "roomId": {
+          "__rl": true,
+          "value": "YOUR_ROOM_ID",
+          "mode": "id"
+        },
+        "message": "=[info][title]📊 今朝のGA4分析レポート（凄腕AIアナリストより）[/title]\n昨日のECサイトのアクセスデータと自社KPIを比較した分析結果をお届けします。\n\n【総合評価】\n{{ $json.status }}\n\n【最大のボトルネック】\n{{ $json.bottleneck }}\n\n【AIの洞察（仮説）】\n{{ $json.hypothesis }}\n\n【今日のアクションプラン】\n{{ $json.action_plan }}\n[hr]※データ詳細はGA4ダッシュボードをご確認ください。[/info]",
+        "requestOptions": {}
+      },
+      "id": "chatwork-notify-node",
+      "name": "Chatwork (ECチームへ通知)",
+      "type": "n8n-nodes-chatwork.chatwork",
+      "typeVersion": 1,
+      "position": [832, -208]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "毎朝9時に実行": {
+      "main": [
+        [
+          {
+            "node": "GA4データ＆KPI取得 (※実装時は実ノードに置換)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GA4データ＆KPI取得 (※実装時は実ノードに置換)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (ECアナリスト)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a report": {
+      "main": [
+        [
+          {
+            "node": "Gemini (ECアナリスト)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (ECアナリスト)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "Chatwork (ECチームへ通知)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
