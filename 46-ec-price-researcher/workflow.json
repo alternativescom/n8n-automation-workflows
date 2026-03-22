@@ -1,0 +1,198 @@
+{
+  "name": "【第46弾】ライバルECサイト価格・新着AI監視ボット",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-node",
+      "name": "毎朝10時に実行",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-200, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "yesterday_data",
+              "value": "【昨日の記録】商品A: 5,000円 (在庫あり), 商品B: 3,000円 (在庫あり)",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "today_scraped_text",
+              "value": "【本日のスクレイピング取得テキスト】\n大決算セール開催中！\n商品A: 今だけ特別価格 4,200円！\n商品B: 3,000円 (残りわずか)\n【NEW】商品C: 6,500円 新発売！",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "mock-scrape-node",
+      "name": "競合データ取得 (※実装時はHTTP Request等に置換)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [20, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは優秀なECサイトの競合監視アナリストです。\n以下の「昨日の記録データ」と「本日取得した競合サイトのテキスト」を比較し、自社の脅威となる変化（値下げ、新商品の追加、在庫切れ等）がないか分析してください。\n\n【昨日の記録】\n{{ $json.yesterday_data }}\n\n【本日のテキスト】\n{{ $json.today_scraped_text }}\n\n【出力JSONフォーマット】\n{\n  \"has_alert\": true または false (※脅威となる変化があればtrue、変化なしならfalse),\n  \"summary\": \"変化の簡単な要約（例：商品Aの値下げと新商品の追加を検知しました）\",\n  \"details\": \"具体的な変化の詳細と、自社が取るべき推奨アクション\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-analyst-node",
+      "name": "Gemini (競合分析)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nreturn JSON.parse(cleanText);"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ff98270a-d043-4af9-a67a-1cfa211bd510",
+              "leftValue": "={{ $json.has_alert }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [680, 0],
+      "id": "if-condition-node",
+      "name": "アラート判定 (IF)"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "create",
+        "roomId": "YOUR_ROOM_ID",
+        "body": "=[info][title]🚨 競合サイト監視アラート[/title]\n競合サイトに重要な変化（値下げ・新着など）を検知しました！至急確認してください。\n\n【要約】\n{{ $json.summary }}\n\n【AIの分析と推奨アクション】\n{{ $json.details }}\n[hr]※監視ボットによる自動通知です。[/info]"
+      },
+      "id": "chatwork-notify-node",
+      "name": "Chatwork (アラート通知)",
+      "type": "n8n-nodes-chatwork.chatwork",
+      "typeVersion": 1,
+      "position": [920, -100]
+    },
+    {
+      "parameters": {},
+      "id": "no-op-node",
+      "name": "変化なし (何もしない)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [920, 100]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "毎朝10時に実行": {
+      "main": [
+        [
+          {
+            "node": "競合データ取得 (※実装時はHTTP Request等に置換)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "競合データ取得 (※実装時はHTTP Request等に置換)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (競合分析)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (競合分析)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "アラート判定 (IF)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "アラート判定 (IF)": {
+      "main": [
+        [
+          {
+            "node": "Chatwork (アラート通知)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "変化なし (何もしない)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
