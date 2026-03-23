@@ -1,0 +1,154 @@
+{
+  "name": "【第47弾】AI-PM自動進捗管理ボット（Notion連携）",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-node",
+      "name": "毎朝9時に実行",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-200, 0]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "YOUR_DATABASE_ID",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "notion-node",
+      "name": "Notion (未完了・保留タスク取得)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [20, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "let taskText = \"【現在のタスク一覧】\\n\";\nconst items = $input.all();\n\nif (items.length === 0) {\n  taskText += \"現在、対応が必要なタスクはありません！\\n\";\n} else {\n  items.forEach(item => {\n    // 定義したルールに沿ってプロパティ名を取得\n    const taskName = item.json[\"タスク名\"] || \"不明なタスク\";\n    const deadline = item.json[\"完了期日目標\"] || \"設定なし\";\n    const status = item.json[\"ステータス\"] || \"不明\";\n    \n    taskText += `・${taskName} (期日: ${deadline}) - ステータス: ${status}\\n`;\n  });\n}\n\nreturn [{ json: { notion_tasks: taskText } }];"
+      },
+      "id": "code-format-node",
+      "name": "タスク一覧をテキスト化 (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは優秀で、少し元気なトーンの「AIプロジェクトマネージャー（AI-PM）」です。\n以下の「現在のタスク一覧」を読み込み、チームメンバー（人間）が今日迷わずに行動できるよう、タスクを整理して指示を出してください。\nまた、「保留」ステータスのまま放置されているタスクがあれば、方針の再検討や掘り起こしを促してください。\n\n【タスク一覧】\n{{ $json.notion_tasks }}\n\n【出力JSONフォーマット】\n{\n  \"greeting\": \"朝の元気な挨拶と、今日のチームへの一言\",\n  \"overdue_tasks\": \"期日が遅れている（または今日が期日の）絶対に終わらせるべきタスクのリストと、急かす一言\",\n  \"today_priorities\": \"今日着手すべき優先タスク（トップ3）とその理由。保留タスクがあればその確認も。\",\n  \"encouragement\": \"チームのモチベーションを上げる、PMからの締めの言葉\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-pm-node",
+      "name": "Gemini (AI-PM)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [460, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8nやGeminiの仕様変更に対応し、どこにテキストがあっても安全に取得\nconst text = $input.item.json.text || $input.item.json.content || $input.item.json.message?.content || \"\";\n\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nreturn JSON.parse(cleanText || \"{}\");"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 0]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "create",
+        "roomId": "YOUR_ROOM_ID",
+        "body": "=[info][title]📅 朝のタスク・ブリーフィング（AI-PMより）[/title]\n{{ $json.greeting }}\n\n[hr]\n【🚨 要注意！最優先で終わらせるタスク】\n{{ $json.overdue_tasks }}\n\n【🎯 本日着手すべきタスク＆保留の確認】\n{{ $json.today_priorities }}\n\n[hr]\n{{ $json.encouragement }}\n[/info]"
+      },
+      "id": "chatwork-notify-node",
+      "name": "Chatwork (チームへ指示)",
+      "type": "n8n-nodes-chatwork.chatwork",
+      "typeVersion": 1,
+      "position": [900, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "毎朝9時に実行": {
+      "main": [
+        [
+          {
+            "node": "Notion (未完了・保留タスク取得)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion (未完了・保留タスク取得)": {
+      "main": [
+        [
+          {
+            "node": "タスク一覧をテキスト化 (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "タスク一覧をテキスト化 (Code)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (AI-PM)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (AI-PM)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "Chatwork (チームへ指示)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
