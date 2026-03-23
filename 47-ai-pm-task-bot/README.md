@@ -48,7 +48,7 @@
      taskText += `・${name} (期日: ${deadline})\n`;
    });
    return [{ json: { notion_tasks: taskText } }];
-```
+   ```
 
 ## 🏢 自社への導入・カスタマイズをご希望の方へ (Consulting & Support)
 「Notionの連携設定がうまくいかない」「毎朝のタスク確認だけでなく、夕方の進捗リマインドも自動化したい」「Googleカレンダーの予定も加味してAIに指示を出させたい」といった高度なカスタマイズのご相談も承っております。
