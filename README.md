@@ -57,6 +57,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**44. EC Product Description Generator**](./44-ec-product-description-bot) | **EC & Marketing.** Upload a product image via n8n form, and Gemini Vision generates an SEO-optimized product title, description, and tags. Formats and sends the result to Chatwork via HTTP Request for easy copy-pasting to Shopify/BASE. | Form, Gemini, Code, HTTP Request |
 | [**45. GA4 & Custom KPI Analyst Bot**](./45-ga4-kpi-analyst-bot) | **EC & Analytics.** A powerful AI analyst bot that fetches daily GA4 data and evaluates it against custom business KPIs (context). Generates actionable insights and alerts the team via Chatwork. | Schedule, GA4, Set, Gemini, Chatwork |
 | [**46. EC Price resaercher Bot**](./46-ec-price-resaercher) | **EC & Monitoring.** AI analyzes scraped text from competitor sites to detect price drops or new items. Uses an IF node to alert the team via Chatwork ONLY when actionable changes occur, preventing notification fatigue. | Schedule, Set, Gemini, IF, Chatwork |
+| [**47. AI-PM Task Bot**](./47-ai-pm-task-bot) | **Project Management.** A paradigm shift: Let AI be your Project Manager. Automatically fetches tasks from Notion and uses Gemini to analyze deadlines, outputting a morning briefing with prioritized instructions to your team via Chatwork/Slack. | Schedule, Set/Notion, Gemini, Chatwork |
 
 *(More workflows are currently under development. Target: 20+)*
 
