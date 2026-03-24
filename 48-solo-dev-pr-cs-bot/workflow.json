@@ -1,0 +1,242 @@
+{
+  "name": "【第48弾】一人開発特化：広報・CS統括AIボット",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-cs",
+      "name": "CSルート テスト実行",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, -200]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "user_message",
+              "value": "昨日のアップデートからアプリがすぐ落ちるんだけど。ふざけんな！マジで使えない。早く直せよ、金返せ！",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "mock-cs-node",
+      "name": "ダミー問い合わせ受信",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, -200]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは一人開発者のメンタルを守り、ユーザーサポートを代行する「優秀なCS担当兼カウンセラー」です。\n以下のユーザーからの問い合わせ文章を読み込み、開発者が傷つかないように感情的な言葉を取り除いて「客観的な事象（バグ、要望等）」だけを抽出・要約してください。さらに、ユーザーへ送るべき誠実なお詫びと対応案のドラフトを作成してください。\n\n【ユーザーからのメッセージ】\n{{ $json.user_message }}\n\n【出力JSONフォーマット】\n{\n  \"category\": \"バグ報告 / 機能要望 / その他\",\n  \"mild_summary\": \"感情的な言葉を排除した、客観的な事象の要約\",\n  \"reply_draft\": \"ユーザーにそのまま送信できる、誠実な返信文のドラフト\",\n  \"mental_care\": \"開発者（あなた）のメンタルをケアし、励ます一言\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-cs-node",
+      "name": "Gemini (CS・感情フィルタ)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [440, -200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.text || $input.item.json.content || $input.item.json.message?.content || \"\";\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nreturn JSON.parse(cleanText || \"{}\");"
+      },
+      "id": "code-parse-cs",
+      "name": "JSONパース (CS)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, -200]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_CHANNEL_ID",
+        "text": "=*🛡️ CSボット：問い合わせを受信しました*\nユーザーから【{{ $json.category }}】がありました。\n\n*【事象の要約（マイルド変換済）】*\n> {{ $json.mild_summary }}\n\n*【ユーザーへの返信ドラフト】*\n> {{ $json.reply_draft }}\n\n💡 *ボットより：*\n_{{ $json.mental_care }}_",
+        "otherOptions": {}
+      },
+      "id": "slack-cs",
+      "name": "Slack (CS通知)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [880, -200]
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger-pr",
+      "name": "PRルート テスト実行",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "completed_tasks",
+              "value": "・ダークモード対応（設定画面から切り替え可能に）\n・一覧画面の読み込み速度を約30%改善（N+1問題の解消）\n・パスワードリセット機能が動かないバグを修正",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "mock-pr-node",
+      "name": "ダミー完了タスク (Notion想定)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 100]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは一人開発者を支える優秀な「広報・マーケティング担当」です。\n以下の「今週完了したタスク一覧」を読み込み、ユーザー向けに誠実で分かりやすい「リリースノート（PR文）」を作成してください。\n過度な煽りやバズ狙いは避け、開発者のこだわりやユーザーへの価値が真っ直ぐ伝わる文章にしてください。\n\n【完了したタスク一覧】\n{{ $json.completed_tasks }}\n\n【出力JSONフォーマット】\n{\n  \"release_note\": \"サービス内やブログに掲載する、誠実なリリースノート\",\n  \"sns_post_draft\": \"X（Twitter）などのSNSで告知するための、親しみやすく簡潔な投稿文ドラフト\",\n  \"marketing_advice\": \"広報担当からの、今回のリリースに関するワンポイントアドバイス\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-pr-node",
+      "name": "Gemini (PR・広報生成)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [440, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.text || $input.item.json.content || $input.item.json.message?.content || \"\";\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nreturn JSON.parse(cleanText || \"{}\");"
+      },
+      "id": "code-parse-pr",
+      "name": "JSONパース (PR)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 100]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_CHANNEL_ID",
+        "text": "=*📣 広報ボット：リリースノートが完成しました*\n今週の開発、お疲れ様でした！完了タスクをもとにPR文を作成しました。\n\n*【📝 リリースノート（ブログ/サイト用）】*\n> {{ $json.release_note }}\n\n*【🐦 SNS告知用ドラフト】*\n> {{ $json.sns_post_draft }}\n\n💡 *広報担当よりアドバイス：*\n_{{ $json.marketing_advice }}_",
+        "otherOptions": {}
+      },
+      "id": "slack-pr",
+      "name": "Slack (PR通知)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [880, 100]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "CSルート テスト実行": {
+      "main": [
+        [
+          {
+            "node": "ダミー問い合わせ受信",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ダミー問い合わせ受信": {
+      "main": [
+        [
+          {
+            "node": "Gemini (CS・感情フィルタ)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (CS・感情フィルタ)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (CS)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (CS)": {
+      "main": [
+        [
+          {
+            "node": "Slack (CS通知)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PRルート テスト実行": {
+      "main": [
+        [
+          {
+            "node": "ダミー完了タスク (Notion想定)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ダミー完了タスク (Notion想定)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (PR・広報生成)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (PR・広報生成)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (PR)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (PR)": {
+      "main": [
+        [
+          {
+            "node": "Slack (PR通知)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
