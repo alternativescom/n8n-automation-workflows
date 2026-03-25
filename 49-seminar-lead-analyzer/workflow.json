@@ -1,0 +1,137 @@
+{
+  "name": "【第49弾】セミナー参加者の「熱量分析＆個別提案メール」自動生成ボット",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-node",
+      "name": "テスト実行",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "company_name",
+              "value": "株式会社サンプル商事",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "attendee_name",
+              "value": "田中 太郎",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "survey_feedback",
+              "value": "本日はありがとうございました。AIで業務が効率化できるイメージは湧きましたが、弊社にはITに強い人材が全くおらず、何から手をつけていいか分かりません。まずはあまりコストをかけずに、現場の事務作業（データ入力など）を自動化する小さな成功体験を作りたいと考えています。",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "mock-survey-node",
+      "name": "ダミーアンケート回答 (※実装時はWebhook等に置換)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたは優秀な「インサイドセールス（営業コンサルタント）」です。\n以下のAI活用・DX推進セミナーの参加者アンケートを読み込み、この見込み客の「熱量（受注確度）」を100点満点でスコアリングし、課題の分析と、そのまま送信できるパーソナライズされたフォローアップメールのドラフトを作成してください。\n\n【回答者情報】\n企業名: {{ $json.company_name }}\n氏名: {{ $json.attendee_name }}\n\n【アンケート自由記述】\n{{ $json.survey_feedback }}\n\n【出力JSONフォーマット】\n{\n  \"score\": \"熱量スコア（例: 85）\",\n  \"analysis\": \"この顧客の現状課題と、コンサルタントとして提案すべきDXの方向性の分析\",\n  \"email_draft\": \"相手の課題に寄り添い、無料相談や次のアクションへ自然に誘導する誠実なフォローアップメールの文面（件名含む）\",\n  \"next_action\": \"営業担当者（あなた）が次に取るべき社内アクションの助言\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-sales-node",
+      "name": "Gemini (熱量分析＆メール生成)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.text || $input.item.json.content || $input.item.json.message?.content || \"\";\nlet cleanText = text.trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\nreturn JSON.parse(cleanText || \"{}\");"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_CHANNEL_ID",
+        "text": "=*🎯 新規リード分析：{{ $('ダミーアンケート回答 (※実装時はWebhook等に置換)').item.json.company_name }} 様*\nセミナーのアンケート回答を受信し、AIが分析を行いました！\n\n*🔥 熱量スコア: 【 {{ $json.score }} 点 】*\n\n*【課題と提案の方向性】*\n> {{ $json.analysis }}\n\n[hr]\n*【✉️ 送信用メールドラフト】*\n```\n{{ $json.email_draft }}\n```\n\n💡 *次のおすすめアクション：*\n_{{ $json.next_action }}_",
+        "otherOptions": {}
+      },
+      "id": "slack-notify-node",
+      "name": "Slack (営業チームへ通知)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [880, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "テスト実行": {
+      "main": [
+        [
+          {
+            "node": "ダミーアンケート回答 (※実装時はWebhook等に置換)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ダミーアンケート回答 (※実装時はWebhook等に置換)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (熱量分析＆メール生成)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (熱量分析＆メール生成)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "Slack (営業チームへ通知)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
