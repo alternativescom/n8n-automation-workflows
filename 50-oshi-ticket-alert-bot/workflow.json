@@ -1,0 +1,131 @@
+{
+  "name": "【第50弾】HANAイベント情報＆DMエントリー促進ボット",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-node",
+      "name": "テスト実行",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "official_news",
+              "value": "【NEWS】HANA 2026年アリーナツアー『Blossom』開催決定！ファンクラブ最速先行抽選の受付を開始しました。受付期間：本日12:00 〜 3月28日 23:59まで。URL: https://dummy-ticket.com/hana2026",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "sns_buzz",
+              "value": "・HANAちゃんのツアー発表キター！！\n・FC先行の受付期間、たったの3日間しかない！短すぎ！みんな急いで！\n・絶対当てるぞ…仕事終わったらすぐ申し込む。 #HANA",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "mock-data-node",
+      "name": "ダミー情報取得 (公式＆SNS)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=あなたはアーティスト「HANA」の熱狂的なファンであり、野田さんの頼れる推し活アシスタントです。\n以下の「公式ニュース」と「SNSのファンの反応」を読み込み、野田さんが**今すぐチケットのエントリー（申し込み）を完了させたくなるような、緊急性の高いメッセージ**を作成してください。\n\n【公式ニュース】\n{{ $json.official_news }}\n\n【SNSのファンの反応】\n{{ $json.sns_buzz }}\n\n【出力JSONフォーマット】\n{\n  \"dm_text\": \"スマホの通知画面で見てすぐ行動したくなる、短くて強烈に煽るメッセージ（URL必須）\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-fan-node",
+      "name": "Gemini (熱狂的アシスタント)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const itemData = $input.item.json;\nlet rawText = \"\";\n\nif (itemData.content && itemData.content.parts && itemData.content.parts[0]) {\n  rawText = itemData.content.parts[0].text;\n} else if (typeof itemData.text === 'string') {\n  rawText = itemData.text;\n} else if (typeof itemData.content === 'string') {\n  rawText = itemData.content;\n}\n\nlet cleanText = String(rawText).trim();\nconst startIndex = cleanText.indexOf('{');\nconst endIndex = cleanText.lastIndexOf('}');\n\nif (startIndex !== -1 && endIndex !== -1) {\n  cleanText = cleanText.substring(startIndex, endIndex + 1);\n}\n\nreturn JSON.parse(cleanText || \"{}\");"
+      },
+      "id": "code-parse-node",
+      "name": "JSONパース (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "channel": "YOUR_SLACK_USER_ID",
+        "text": "=*🚨 【緊急：HANA チケットアラート】*\n{{ $json.dm_text }}",
+        "otherOptions": {}
+      },
+      "id": "slack-dm-node",
+      "name": "Slack (DM送信)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [880, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "テスト実行": {
+      "main": [
+        [
+          {
+            "node": "ダミー情報取得 (公式＆SNS)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ダミー情報取得 (公式＆SNS)": {
+      "main": [
+        [
+          {
+            "node": "Gemini (熱狂的アシスタント)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (熱狂的アシスタント)": {
+      "main": [
+        [
+          {
+            "node": "JSONパース (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSONパース (Code)": {
+      "main": [
+        [
+          {
+            "node": "Slack (DM送信)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
