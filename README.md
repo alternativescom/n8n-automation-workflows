@@ -59,6 +59,7 @@ Unlike standard templates, every workflow in this repository includes a **Built-
 | [**46. EC Price resaercher Bot**](./46-ec-price-resaercher) | **EC & Monitoring.** AI analyzes scraped text from competitor sites to detect price drops or new items. Uses an IF node to alert the team via Chatwork ONLY when actionable changes occur, preventing notification fatigue. | Schedule, Set, Gemini, IF, Chatwork |
 | [**47. AI-PM Task Bot**](./47-ai-pm-task-bot) | **Project Management.** A paradigm shift: Let AI be your Project Manager. Automatically fetches tasks from Notion and uses Gemini to analyze deadlines, outputting a morning briefing with prioritized instructions to your team via Chatwork/Slack. | Schedule, Set/Notion, Gemini, Chatwork |
 | [**48. Solo Dev PR & CS Bot**](./48-solo-dev-pr-cs-bot) | **PR & CS Management.** A dual-route bot for solo developers. The CS route filters out emotional language from user complaints to protect your mental health. The PR route automatically drafts sincere release notes and social media posts based on your completed tasks. | Webhook/Schedule, Gemini, Slack |
+| [**49. Seminar Lead Analyzer**](./49-seminar-lead-analyzer) | **Sales & Lead Generation.** Analyzes post-seminar survey feedback using Gemini. Automatically scores the lead's "heat level" (interest/readiness), extracts their specific pain points, and generates a highly personalized follow-up email draft sent directly to your Slack. | Webhook/Form, Gemini, Slack |
 
 *(More workflows are currently under development. Target: 20+)*
 
