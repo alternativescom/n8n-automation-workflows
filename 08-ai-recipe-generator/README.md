@@ -1,30 +1,34 @@
-# Lazy Chef: AI Recipe Generator 🍳
+# 🍳 08 - AI Recipe Generator（AI冷蔵庫救済・献立自動作成ボット）
 
-![Screenshot](スクリーンショット08.png)
+[![n8n.io](https://img.shields.io/badge/n8n-workflow-orange.svg)](https://n8n.io/)
+[![Gemini](https://img.shields.io/badge/AI-Gemini-blue.svg)](https://deepmind.google/technologies/gemini/)
 
-## Overview
-**Turn fridge leftovers into a gourmet feast.**
-Don't know what to cook? Just enter the ingredients you have (e.g., "Eggs, Milk, Old Bread") into the form. This workflow uses **Gemini (AI)** to dream up 3 distinct recipe variations: **Speed** (fast), **Healthy** (light), and **Creative** (unexpected). It even searches **Google Images** to show you what the final dish could look like, then sends you a beautiful menu via email.
+## 💡 概要 (Overview)
+**「献立を考える『名もなき家事』を、今日で終わりにします。」**
 
-## Key Features
-- **👨‍🍳 3-Style Generation:** Doesn't just give one recipe; it offers choices based on your mood (Speed/Healthy/Creative).
-- **🖼️ Visual Enrichment:** Automatically fetches appetizing images from Google Search to make the email menu pop.
-- **🧪 Built-in Test Mode:** Simulates an input of "Eggs, Milk, Tomato" to demonstrate the generation and email delivery instantly.
+AI Recipe Generatorは、冷蔵庫に残っているあり合わせの食材をテキスト（または画像）で送るだけで、AI（Gemini）が「今すぐ作れる美味しいレシピ」を考案し、手順と共に返信してくれるn8nワークフローです。
 
-## How It Works
-1. **Input:** You submit ingredients via an n8n Form (or use Test Mode).
-2. **Generate:** Gemini acts as a master chef, creating 3 unique recipes from the same ingredients.
-3. **Visualize:** The workflow loops through each recipe and finds a matching image via Google Custom Search API.
-4. **Deliver:** Aggregates all 3 options into a single HTML email and logs them to Google Sheets.
+既存のレシピサイトのように「指定された材料をすべて揃える」必要はありません。AIがあなたの手持ちの食材と、その日の疲労度（「10分以内で」「包丁を使いたくない」など）に合わせて、最適な料理を"発明"してくれます。
 
-## Setup Steps
-1. **Import:** Import `workflow.json` into n8n.
-2. **Credentials:** Set up Gemini, Google Custom Search, Sheets, and Gmail.
-3. **Google Sheets:** Create a file with columns: `date`, `style`, `recipe_name`, `image_url`.
-4. **Config:** - Open **"Config"** to set your API Keys and Sheet ID.
-   - Set `TEST_MODE` to `true` to run a simulation.
+## 🎯 解決する課題 (Pain Points)
+* 仕事終わりの18時、冷蔵庫を開けて「半端なキャベツと豚肉と卵で何が作れるか」を考える気力が残っていない。
+* レシピアプリで検索しても、調味料や食材が一部足りず、結局スーパーに買い出しに行く羽目になる。
+* 毎日の「今日のご飯、何にする？」という意思決定の連続で、脳のエネルギーが削られている（決断疲れ）。
 
-## Requirements
-- n8n v1.x or later
-- Google Gemini API Key
-- Google Custom Search API (with Image search enabled)
+## ⚙️ ワークフローの仕組み (How it Works)
+1. **トリガー:** LINEやSlackなどから、「手持ちの食材（例：鶏肉、大根、ごま油）」と「要望（例：さっぱりしたおつまみ）」をメッセージとして送信します。
+2. **AIレシピ考案:** `Gemini` ノードがプロの料理長としてデータを読み込み、与えられた食材だけで作れる（足りないものはうまく代用する）オリジナルレシピを生成します。
+3. **出力フォーマット:** 料理名、必要な調味料、調理ステップを読みやすい形に整えて返信します。
+
+## 🚀 使い方 (How to Use)
+1. このリポジトリ内の `workflow.json` をダウンロードします。
+2. ご自身のn8n環境を開き、ワークフロー画面で「Import from File」を選択して読み込みます。
+3. トリガーとなるチャットツール（LINEチャットボットやSlack等）のWebhookを設定します。
+4. `Gemini` ノードにAPIキーを設定してください。
+
+## 💡 カスタマイズのヒント
+* **Vision（画像認識）の活用:** AIを `Gemini Pro Vision` に変更し、冷蔵庫の中身の「写真」をそのまま送信してレシピを考案させる、究極のズボラ仕様にアップグレードすることも可能です。
+* **栄養士モード:** AIへのプロンプトに「私は現在ダイエット中です（糖質制限中）」といった条件を固定で入れておくことで、専属のAI栄養士としてカロリー計算込みの提案をしてくれるようになります。
+
+---
+**Created by [Alternative Computers](https://alternativecomputers.org/)** 日々のルーチンワークの自動化から、企業向けの大規模なDX推進サポートまで、有限会社野田収一事務所までお気軽にご相談ください。
