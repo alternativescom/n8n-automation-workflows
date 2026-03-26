@@ -1,39 +1,36 @@
-# AI Book Advisor: Reviews & Recommendations (Monetization Ready) 📚
+# 📚 01 - AI Book Advisor（AI専属読書メンターボット）
 
-![Screenshot](スクリーンショット.png)
+[![n8n.io](https://img.shields.io/badge/n8n-workflow-orange.svg)](https://n8n.io/)
+[![Gemini](https://img.shields.io/badge/AI-Gemini-blue.svg)](https://deepmind.google/technologies/gemini/)
 
-## Overview
-**Turn book curiosity into affiliate revenue.** 💰
-This workflow acts as an automated "Book Curator." It accepts a book title request, researches reviews using Google Search, analyzes them with an AI Agent (GPT-4o), and delivers a rich HTML email with a summary, related recommendations, and **Amazon Affiliate links**.
+## 💡 概要 (Overview)
+**「今のあなたの悩みに、クリティカルに効く1冊を処方します。」**
 
-## Key Features
-- **🤖 AI Agent Analysis:** Uses LangChain Agent to synthesize web reviews and generate personalized recommendations.
-- **💸 Monetization Ready:** Automatically appends your Amazon Associate Tag to purchase links.
-- **📧 Rich HTML Emails:** Sends beautiful, mobile-responsive emails with book covers and formatted layouts.
-- **📊 Database Logging:** Archives all requests and AI insights to Google Sheets for future analysis.
+AI Book Advisorは、ユーザーの現在の「悩み」「興味」「気分」を入力するだけで、AI（Gemini）が膨大な書籍データの中から**「今のあなたに最も必要な本」**を選び出し、その理由とともに提案してくれるn8nワークフローです。
 
-## How It Works
-1. **Input:** User submits a book title (and optional author) via an n8n Form.
-2. **Enrichment:**
-   - Fetches metadata (Cover, ISBN) via **Google Books API**.
-   - Searches for real-world reviews via **Google Custom Search API**.
-3. **Analysis:** The AI Agent reads the reviews, summarizes the book's appeal, and suggests 3 related books in a structured JSON format.
-4. **Delivery:** Generates an HTML email with affiliate links and sends it to the user.
+単なるベストセラーの紹介ではなく、あなたの状況に寄り添った「パーソナライズされた読書体験」を提供します。
 
-## Setup Steps
-1. **Import:** Import `workflow.json` into your n8n instance.
-2. **Credentials:** Set up credentials for:
-   - OpenAI (GPT-4o)
-   - Google Books API (No auth required usually, or API Key)
-   - Google Custom Search API
-   - Gmail & Google Sheets
-3. **Configuration:**
-   - Open the **"Workflow Configuration"** node (Set node).
-   - Enter your API Keys and your **Amazon Affiliate Tag** (e.g., `mytag-22`).
-   - *Note: Mock values are currently set as placeholders.*
-4. **Google Sheets:** Create a sheet with these columns: `date`, `book_title`, `author`, `ai_comment`, `user_email`.
+## 🎯 解決する課題 (Pain Points)
+* 仕事やプライベートで課題に直面しているが、どの本を読めば解決のヒントが得られるかわからない。
+* Amazonのレビューを漁って「ハズレのない本」を探す時間がもったいない。
+* 自分では手に取らないような、AIならではのセレンディピティ（偶然の良書との出会い）が欲しい。
 
-## Requirements
-- n8n v1.x or later
-- OpenAI API Key
-- Google Cloud Platform Project (for Custom Search & Books API)
+## ⚙️ ワークフローの仕組み (How it Works)
+1. **トリガー:** チャットやフォーム（Webhook等）からユーザーの「現在の悩み」や「読みたいテーマ」を受け取ります。
+2. **AIプロンプト処理:** `Gemini` ノードが、優秀なブックアドバイザーとして入力内容を分析します。
+3. **提案生成:** なぜその本が今のあなたに最適なのか（読むべき理由）を添えて、書籍タイトルと著者名を出力します。
+4. **出力:** SlackやLINE、メールなどに結果を返します。
+
+
+## 🚀 使い方 (How to Use)
+1. このリポジトリ内の `workflow.json` をダウンロードします。
+2. ご自身のn8n環境を開き、ワークフロー画面で「Import from File」を選択して読み込みます。
+3. `Gemini` ノード（または使用するAIノード）に、ご自身のAPIキーを設定してください。
+4. トリガーノード（Webhookなど）を実行し、テストデータを送信して動作を確認します。
+
+## 💡 カスタマイズのヒント
+* **出力先の変更:** 最後のノードをSlackからLINEやNotionなどに変更することで、自分だけの「読書記録データベース」を自動構築することも可能です。
+* **プロンプトの調整:** AIへの指示を「自己啓発本に絞る」「歴史書から教訓を引く」など変更することで、特定ジャンルに特化したアドバイザーに進化します。
+
+---
+**Created by [Alternative Computers](https://alternativecomputers.org/)** ビジネスの現場を楽にするDXサポート・自動化のご相談はお気軽にお問い合わせください。
