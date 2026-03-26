@@ -1,38 +1,36 @@
-# Elderly Care Monitor (LINE & Gemini) 👵🤖
+# 👵👴 06 - Elderly Care Monitor（AI×IoT 高齢者見守りボット）
 
+[![n8n.io](https://img.shields.io/badge/n8n-workflow-orange.svg)](https://n8n.io/)
+[![Gemini](https://img.shields.io/badge/AI-Gemini-blue.svg)](https://deepmind.google/technologies/gemini/)
+
+## 💡 概要 (Overview)
+**「『見張る』のではなく『見守る』。プライバシーを守りながら、遠くの家族に安心を。」**
+
+Elderly Care Monitorは、スマートホーム機器（温湿度センサー、ドア開閉センサー、スマートプラグ等）から取得した生活データをAI（Gemini）が分析し、離れて暮らす高齢者の「生活リズムの危険な変化」を察知して家族に通知するn8nワークフローです。
+
+監視カメラのような心理的抵抗感を与えず、「真夏に室内が35度を超えているのにエアコンが稼働していない」「24時間以上、トイレのドアが開閉されていない」といった『声なきSOS』をAIが推論し、手遅れになる前のアクションを促します。
+
+## 🎯 解決する課題 (Pain Points)
+* 離れて暮らす親の安否が常に心配だが、毎日電話で確認するのはお互いに精神的な負担になる。
+* リビングに監視カメラを設置することを提案したが、「監視されているようで嫌だ」と拒絶されてしまった。
+* 「連絡がないのは元気な証拠」と思い込みたいが、熱中症や室内での転倒など、突発的なトラブルへの恐怖が拭えない。
+
+## ⚙️ ワークフローの仕組み (How it Works)
 ![Screenshot](スクリーンショット06.png)
+1. **IoTデータ取得:** `Schedule Trigger` ノードを起点に、SwitchBotやSmartThingsなどのIoTプラットフォームのAPIを定期的に叩き、センサー情報（室温、ドア開閉履歴、家電の電力使用量など）を取得します。
+2. **AI状況推論:** 取得したデータを `Gemini` ノードに渡し、「現在の状況は高齢者の健康にとって危険（または異常）ではないか？」を推論させます。
+3. **条件分岐:** AIが「異常あり（アラートが必要）」と判断した場合のみ、次のステップへ進みます。
+4. **家族へ通知:** 家族のLINEやSlack、SMSなどに「異常の可能性とその理由（例：室温異常のため熱中症の危険あり）」を即座に通知します。
 
-## Overview
-**Ensure the safety of elderly family members living alone.**
-This workflow was designed to monitor daily communications via **LINE**. It uses **Gemini (AI)** to analyze the sentiment of messages for distress signals (e.g., "I feel dizzy") and logs health updates to **Google Sheets**. If an emergency is detected or inactivity persists, it alerts family members instantly.
+## 🚀 使い方 (How to Use)
+1. このリポジトリ内の `workflow.json` をダウンロードします。
+2. ご自身のn8n環境を開き、ワークフロー画面で「Import from File」を選択して読み込みます。
+3. `HTTP Request` ノード等に、ご使用のIoTデバイス（SwitchBot API等）の認証情報を設定します。
+4. `Gemini` ノードにAPIキーを設定し、親御さんの基礎疾患や普段の起床時間などをプロンプトに加味して推論精度を上げてください。
 
-*Note: This workflow was previously approved for the official n8n template library.*
+## 💡 カスタマイズのヒント
+* **Twilio連携による緊急コール:** 緊急度が「高（例：丸1日動きがない）」と判定された場合、家族のスマホに直接自動音声で電話をかける `Twilio` ノードを追加すると、深夜でも確実な初動対応が可能になります。
+* **朝の「おはよう」自動化:** 毎朝、電気ケトルやテレビの電源が入った（＝起きて活動を始めた）ことをトリガーに、「今日も無事に起きました」という安心メッセージだけを家族のLINEにそっと送る機能も簡単に実装できます。
 
-## Key Features
-- **🚨 AI Distress Detection:** Gemini analyzes messages not just for keywords, but for sentiment (Emergency vs. Routine).
-- **📝 Health Logging:** Automatically archives daily messages and health status to Google Sheets for long-term monitoring.
-- **🧪 Built-in Test Mode:** Includes a simulation mode to trigger "Emergency" alerts without needing to send actual LINE messages.
-
-## How It Works
-1. **Monitor:** Listens for incoming messages from the elderly person's LINE account.
-2. **Analyze:** Gemini evaluates the text to determine the safety status (Positive/Negative/Emergency).
-3. **Action:**
-   - **Normal:** Logs the status to Google Sheets.
-   - **Emergency:** Sends an immediate email alert to family members.
-
-## Setup Steps
-1. **Import:** Import `workflow.json` into n8n.
-2. **Credentials:** Set up LINE Notify (or Messaging API), Gemini, Google Sheets, and Gmail.
-3. **Config:**
-   - Open the **"Config"** node.
-   - Set `ALERT_EMAIL` and `SHEET_ID`.
-   - Set `TEST_MODE` to `true` to verify the emergency alert logic.
-
-## Requirements
-- n8n v1.x or later
-- LINE Account (Messaging API)
-- Google Gemini API Key
-
-## 📖 Tutorial / Article
-I wrote a detailed tutorial (in Japanese) about how I built this workflow:
-[**【n8n】高齢者の「LINE安否確認」をGeminiで自動化するワークフローを作ってみた**](https://zenn.dev/webook/articles/489df689735209)
+---
+**Created by [Alternative Computers](https://alternativecomputers.org/)** IoTを活用した見守りシステムの構築や、自治体・介護事業者向けの業務自動化支援については、有限会社野田収一事務所までお気軽にご相談ください。
