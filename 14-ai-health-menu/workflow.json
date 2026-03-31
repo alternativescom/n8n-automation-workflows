@@ -1,215 +1,156 @@
-},
-      "id": "8d340df3-dda5-4887-bc08-d3803c839220",
-      "name": "Parse JSON",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+{
+  "name": "AI Health Menu v2 (Bio-Hacking Edition)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🥗 AI Health Menu v2 (Performance Focus)\n\n**2026 Standard Upgrade:**\n1. **Context Memory:** Fetches past meals to avoid repetition.\n2. **Bio-Hacking AI:** Gemini outputs PFC balance and logical reasons (e.g., preventing blood sugar spikes).\n3. **Slack UI:** Delivers a beautiful Block Kit dashboard to Slack instead of plain email.",
+        "height": 300,
+        "width": 450,
+        "color": 3
+      },
+      "id": "a1e09904-cc57-45a3-8380-3993843f2e33",
+      "name": "Sticky Note - Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
       "position": [
-        560,
-        208
+        -1120,
+        64
       ]
     },
     {
       "parameters": {
-        "operation": "appendOrUpdate",
-        "documentId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $('Config').first().json.SHEET_ID }}"
-        },
-        "sheetName": {
-          "__rl": true,
-          "mode": "name",
-          "value": "MealLog"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Date": "={{ $now.format('yyyy-MM-dd') }}",
-            "Goal": "={{ $json.goal_summary }}",
-            "Breakfast": "={{ $json.menu[0].name }}",
-            "Lunch": "={{ $json.menu[1].name }}",
-            "Dinner": "={{ $json.menu[2].name }}",
-            "Advice": "={{ $json.bio_hack_advice }}"
-          }
-        }
-      },
-      "id": "2402a1af-ece1-4ad0-9c03-e3071696aae6",
-      "name": "Save to Sheets",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [
-        784,
-        208
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "kETRjtRKedfCcNUZ",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "select": "channel",
-        "channelId": {
-          "__rl": true,
-          "value": "={{ $('Config').first().json.SLACK_CHANNEL }}",
-          "mode": "id"
-        },
-        "text": "=🥗 Today's Performance Menu",
-        "jsonParameters": true,
-        "blocksUi": {
-          "blocksValues": [
+        "assignments": {
+          "assignments": [
             {
-              "type": "header",
-              "text": {
-                "type": "plain_text",
-                "text": "🥗 Today's Performance Menu"
-              }
+              "id": "id-1",
+              "name": "SHEET_ID",
+              "value": "YOUR_SHEET_ID_HERE",
+              "type": "string"
             },
             {
-              "type": "section",
-              "text": {
-                "type": "mrkdwn",
-                "text": "*Goal:* {{ $json.goal_summary }}\n*💡 Bio-Hack Tip:* {{ $json.bio_hack_advice }}"
-              }
+              "id": "id-2",
+              "name": "SLACK_CHANNEL",
+              "value": "general",
+              "type": "string"
             },
             {
-              "type": "divider"
-            },
-            {
-              "type": "section",
-              "text": {
-                "type": "mrkdwn",
-                "text": "*🌅 Breakfast:* {{ $json.menu[0].name }}\n> _{{ $json.menu[0].reason }}_\n`{{ $json.menu[0].pfc_balance }}`"
-              }
-            },
-            {
-              "type": "section",
-              "text": {
-                "type": "mrkdwn",
-                "text": "*☀️ Lunch:* {{ $json.menu[1].name }}\n> _{{ $json.menu[1].reason }}_\n`{{ $json.menu[1].pfc_balance }}`"
-              }
-            },
-            {
-              "type": "section",
-              "text": {
-                "type": "mrkdwn",
-                "text": "*🌙 Dinner:* {{ $json.menu[2].name }}\n> _{{ $json.menu[2].reason }}_\n`{{ $json.menu[2].pfc_balance }}`"
-              }
+              "id": "id-3",
+              "name": "TEST_MODE",
+              "value": "true",
+              "type": "string"
             }
           ]
         }
       },
-      "id": "eeb53c6f-cbed-425c-945b-6c3eb6b661b2",
-      "name": "Notify Slack (Rich)",
-      "type": "n8n-nodes-base.slack",
-      "typeVersion": 2.2,
+      "id": "fb106692-1161-4006-931e-9e8daf40cf6f",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [
-        992,
+        -448,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "🥗 Performance Menu Planner",
+        "formDescription": "Enter your available ingredients and today's performance goal.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Ingredients in Fridge",
+              "placeholder": "e.g., Tofu, Chicken breast, Broccoli, Eggs",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Today's Goal / Condition",
+              "defaultValue": "Prevent afternoon sleepiness & high focus",
+              "requiredField": true
+            }
+          ]
+        }
+      },
+      "id": "8f6c76e6-2d47-41b7-91aa-c7cecb5b9dc0",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -672,
         208
       ],
+      "webhookId": "health-menu"
+    },
+    {
+      "parameters": {},
+      "id": "b0bf9088-c9e9-4210-aa1c-1438b0c8872c",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate Context (Past Meals & Bio-Data)\nreturn [{\n  json: {\n    ingredients: \"Tofu, Chicken breast, Spinach, Eggs\",\n    goal: \"Prevent afternoon energy crash & high focus\",\n    history: \"Yesterday: Chicken Salad. 2 days ago: Tofu Stir-fry.\",\n    sleep_hours: 5.5\n  }\n}];"
+      },
+      "id": "38ee98f5-8a56-444e-9d11-a0b29881fde1",
+      "name": "Mock Input & Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Inputs & Add Context\nconst mode = $('Config').first().json.TEST_MODE;\nlet data = {};\n\nif (mode === 'true' || mode === true) {\n  data = $('Mock Input & Context').first().json;\n} else {\n  data = {\n    ingredients: $('Form Trigger').first().json['Ingredients in Fridge'],\n    goal: $('Form Trigger').first().json[\"Today's Goal / Condition\"],\n    history: \"Yesterday: Unknown. Assume needs variety.\", // Replace with Google Sheets Read in prod\n    sleep_hours: 6\n  };\n}\nreturn { json: data };"
+      },
+      "id": "eec3b093-e18b-49cc-bf1d-8bdb834f5731",
+      "name": "Context Manager",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a Bio-hacking Nutritionist and Performance Coach for engineers.\nCreate a 1-day meal plan based on the ingredients to maximize cognitive performance and meet the goal.\n\n[Input Data]\nIngredients: {{ $json.ingredients }}\nGoal: {{ $json.goal }}\nRecent Meals (Avoid repeating): {{ $json.history }}\nSleep last night: {{ $json.sleep_hours }} hours\n\n[Output JSON ONLY]\n{\n  \"goal_summary\": \"...\",\n  \"menu\": [\n    { \"meal\": \"Breakfast\", \"name\": \"...\", \"pfc_balance\": \"P:Xg, F:Yg, C:Zg\", \"reason\": \"Why this boosts performance...\" },\n    { \"meal\": \"Lunch\", \"name\": \"...\", \"pfc_balance\": \"P:Xg, F:Yg, C:Zg\", \"reason\": \"Why this prevents sleepiness...\" },\n    { \"meal\": \"Dinner\", \"name\": \"...\", \"pfc_balance\": \"P:Xg, F:Yg, C:Zg\", \"reason\": \"Why this helps recovery...\" }\n  ],\n  \"bio_hack_advice\": \"One highly actionable bio-hacking tip.\"\n}"
+            }
+          ]
+        },
+        "options": {
+          "responseMimeType": "application/json"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        352,
+        208
+      ],
+      "id": "2b0e1a63-4a24-45e2-9fee-ac172cec8a18",
+      "name": "Gemini: Plan Menu",
       "credentials": {
-        "slackOAuth2Api": {
-          "id": "LTRX0YYlkPgvNCGu",
-          "name": "Slack account"
+        "googlePalmApi": {
+          "id": "uNBp7Mo2n5MpE8Mb",
+          "name": "Google Gemini(PaLM) Api account"
         }
       }
-    }
-  ],
-  "connections": {
-    "Config": {
-      "main": [
-        [
-          {
-            "node": "Mock Input & Context",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Context Manager",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     },
-    "Form Trigger": {
-      "main": [
-        [
-          {
-            "node": "Config",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Manual Trigger": {
-      "main": [
-        [
-          {
-            "node": "Config",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Mock Input & Context": {
-      "main": [
-        [
-          {
-            "node": "Context Manager",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Context Manager": {
-      "main": [
-        [
-          {
-            "node": "Gemini: Plan Menu",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Gemini: Plan Menu": {
-      "main": [
-        [
-          {
-            "node": "Parse JSON",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Parse JSON": {
-      "main": [
-        [
-          {
-            "node": "Save to Sheets",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Save to Sheets": {
-      "main": [
-        [
-          {
-            "node": "Notify Slack (Rich)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  }
-}
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini Output\nconst rawOutput = $input.first().json.output || $input.first().json.content.parts[0].text;\nlet result = {};\ntry {\n  const cleanText = rawOutput.replace(/
+http://googleusercontent.com/immersive_entry_chip/0
