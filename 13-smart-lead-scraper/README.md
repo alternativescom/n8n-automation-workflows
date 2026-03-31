@@ -1,35 +1,32 @@
-# Smart Lead Scraper: Keyword to Sales List 🕵️
+# 🚀 n8n-workflow #13: Smart Lead Scraper
+> **「リスト作成」を卒業し、「商談」に集中する。AIがウェブからリードを自動発掘・分析。**
 
+[![n8n](https://img.shields.io/badge/n8n-Workflow-FF6C37?logo=n8n)](https://n8n.io/)
+[![Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-4285F4?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
+
+ターゲット企業のURLを渡すだけで、AI（Gemini）がサイト内容を読み解き、サービス内容、企業規模、さらには「自社製品との親和性」までを自動でレポート化します。
 ![Screenshot](スクリーンショット13.png)
 
-## Overview
-**Automate your market research and lead generation.**
-Stop manually Googling and copy-pasting company details into spreadsheets. Just enter a keyword (e.g., "AI Startups in Tokyo") into the n8n Form, and this workflow will:
-1. **Search Google** for relevant websites.
-2. Use **Gemini (AI)** to analyze the search results, filter out irrelevant pages, and extract company summaries.
-3. Automatically create a tidy **Sales List** in Google Sheets.
+## 🌟 このワークフローで解決すること
+- **果てしないコピペ作業の撲滅**: 会社概要、事業内容、問い合わせ先を1件ずつコピペする時間をゼロにします。
+- **質の低いリードリストの排除**: AIが企業の強みを分析し、ターゲット外の企業を自動でフィルタリング。
+- **パーソナライズされたアプローチ**: サイトの文脈から「なぜ自社が提案するのか」のフック（きっかけ）をAIが自動生成。
 
-## Key Features
-- **🔎 Automated Research:** Fetches real-time search results via Google Custom Search API.
-- **🧠 AI Filtering:** Gemini intelligently distinguishes between "actual company sites" and "generic articles" or "job boards," keeping your list clean.
-- **🧪 Built-in Test Mode:** Simulates a search for "SaaS Agencies" so you can verify the sheet logging without setting up the Google Search API immediately.
+## 🛠 主な機能
+1. **インテリジェント・スクレイピング**: 指定されたURLから主要なテキスト情報を自動取得。
+2. **AI企業分析**: Geminiが「何をしている会社か」「どんな課題を抱えてそうか」を要約。
+3. **リードスコアリング**: 自社のターゲット属性に合致するかをAIが判定し、優先順位を付与。
+4. **CRM/スプレッドシート連携**: 抽出・分析されたデータを即座に管理台帳へ書き込み。
 
-## How It Works
-1. **Input:** Submit a keyword via the n8n Form.
-2. **Search:** The workflow retrieves top search results (Titles, Snippets, Links).
-3. **Analyze:** Gemini processes the search snippets to extract "Company Name", "Description", and "URL".
-4. **Log:** Saves the structured data to Google Sheets.
+## 🏗 セットアップ方法
+1. **n8nへのインポート**: `smart-lead-scraper.json` をインポートします。
+2. **スクレイピングツールの設定**: ブラウザ操作用ノード（Puppeteer/HTTP Request等）を環境に合わせて調整。
+3. **プロンプトの調整**: 
+   - Geminiノードで「自社の理想の顧客像」を定義してください。
+4. **APIキーの設定**:
+   - Google AI Studio (Gemini API)
+   - 出力先（Google Sheets / Notion等）の認証
 
-## Setup Steps
-1. **Import:** Import `workflow.json` into n8n.
-2. **Credentials:** Set up Google Custom Search (API Key & Engine ID), Gemini, and Sheets.
-3. **Google Sheets:** Create a sheet named `LeadList` with columns: `Company`, `Description`, `URL`, `Added At`.
-4. **Config:**
-   - Open **"Config"** to set your `SHEET_ID`, `GOOGLE_API_KEY`, and `SEARCH_ENGINE_ID`.
-   - Set `TEST_MODE` to `true` to test with mock data.
-
-## Requirements
-- n8n v1.x or later
-- Google Custom Search JSON API (Enabled in Google Cloud Console)
-- Programmable Search Engine ID (from cse.google.com)
-- Google Gemini API Key
+---
+Produced by [有限会社野田収一事務所](https://alternativecomputers.org/)
+「泥臭いリサーチは、AIに任せる時代へ。」
