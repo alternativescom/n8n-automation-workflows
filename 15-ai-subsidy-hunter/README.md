@@ -5,7 +5,6 @@
 [![Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-4285F4?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
 
 補助金や助成金の情報は、膨大な公募要領の中に隠れています。
-![Screenshot](スクリーンショット15.png)
 
 AI Subsidy Hunterは、最新の公募情報を自動収集し、AI（Gemini）があなたの事業内容と照らし合わせ、「受給可能性」と「申請のメリット」を即座に判定。チャンスを逃さずSlackへ届けます。
 
