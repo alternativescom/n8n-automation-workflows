@@ -1,15 +1,15 @@
 {
-  "name": "AI Invoice Clerk: Auto-Process Gmail Attachments",
+  "name": "AI Invoice Clerk v2 (2026 Edition)",
   "nodes": [
     {
       "parameters": {
-        "content": "## 🧾 AI Invoice Clerk\n\nStop typing data manually. This workflow monitors **Gmail** for invoices (PDF/Images), uses **Gemini (Vision)** to extract details (Vendor, Date, Amount), logs them to **Google Sheets**, and requests approval via **Slack**.\n\n## How it works\n1. **Trigger:** Receive email with \"Invoice\" label (or Manual Test).\n   - *Includes a **Test Mode** to simulate extracting data from a sample PDF.*\n2. **Extract:** Gemini analyzes the attachment visual/text and outputs structured JSON.\n3. **Log:** Saves the clean data to Google Sheets.\n4. **Notify:** Sends a structured message to Slack for review.\n\n## Setup steps\n1. **Connect:** Gmail, Google Sheets, Slack, Gemini.\n2. **Config:** Open **\"Config\"** to set Sheet ID and Slack Channel.\n3. **Test:** Set `TEST_MODE` to `true` to verify the logging logic.",
-        "height": 380,
-        "width": 500,
+        "content": "## 🧾 AI Invoice Clerk v2 (Refined)\n\n**2026 Standard Upgrade:**\n1. **AI Extraction:** Gemini 1.5 Flash handles Japanese Invoices.\n2. **Logic Check:** Verifies T-Number & Tax calculation via Code node.\n3. **Human-in-the-loop:** Flags errors in Slack for manual approval.",
+        "height": 300,
+        "width": 450,
         "color": 3
       },
       "id": "c00f7a32-3913-4496-9ee9-4511797cf866",
-      "name": "Sticky Note - Main",
+      "name": "Sticky Note - Refined",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -19,124 +19,22 @@
     },
     {
       "parameters": {
-        "content": "## ⚙️ Configuration\nSet IDs & Mode.",
-        "height": 140,
-        "color": 6
-      },
-      "id": "41be139e-f7d7-4c70-9619-d3938e9d5572",
-      "name": "Sticky Note - Config",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -464,
-        48
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## 📥 Input & Vision\nGmail (Real) or Mock Data.",
-        "height": 340,
-        "width": 760,
-        "color": 6
-      },
-      "id": "05e15754-e368-467d-8f2a-5d91a2d328ad",
-      "name": "Sticky Note - Input",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -160,
-        48
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## 📊 Database Logging\nAuto-entry to Sheets.",
-        "height": 140,
-        "width": 440,
-        "color": 6
-      },
-      "id": "1220b777-a439-462f-aab3-23ebb7eedc34",
-      "name": "Sticky Note - DB",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        672,
-        48
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## 💬 Approval Request\nNotify team via Slack.",
-        "height": 140,
-        "width": 380,
-        "color": 6
-      },
-      "id": "22c5c816-c8b3-4f23-84c1-374c6eb2ce98",
-      "name": "Sticky Note - Notify",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1152,
-        48
-      ]
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "filters": {
-          "labelIds": [
-            "INBOX"
-          ],
-          "q": "has:attachment filename:pdf subject:(invoice OR bill)"
-        }
-      },
-      "id": "669d53fa-acc8-4cc4-af94-4da1af219c67",
-      "name": "Gmail Trigger",
-      "type": "n8n-nodes-base.gmailTrigger",
-      "typeVersion": 1,
-      "position": [
-        -512,
-        144
-      ],
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "qVmR1ytFIlpRVwxW",
-          "name": "Gmail account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "assignments": {
           "assignments": [
             {
               "id": "id-1",
               "name": "SHEET_ID",
-              "value": "",
+              "value": "YOUR_SHEET_ID_HERE",
               "type": "string"
             },
             {
               "id": "id-2",
-              "name": "SLACK_CHANNEL",
-              "value": "general",
-              "type": "string"
-            },
-            {
-              "id": "id-3",
               "name": "TEST_MODE",
-              "value": "true",
+              "value": "false",
               "type": "string"
             }
           ]
-        },
-        "includeOtherFields": true,
-        "options": {}
+        }
       },
       "id": "5dd52a17-aea5-45be-a49d-ecddc1a30145",
       "name": "Config",
@@ -148,88 +46,28 @@
       ]
     },
     {
-      "parameters": {},
-      "id": "bb9ac1ab-c1f5-4be1-b76d-1ddc96076e4f",
-      "name": "Manual Trigger",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        -512,
-        304
-      ]
-    },
-    {
-      "parameters": {
-        "rules": {
-          "values": [
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict"
-                },
-                "conditions": [
-                  {
-                    "leftValue": "",
-                    "rightValue": "",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              }
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "63803ecd-1f93-4efb-a223-ecc4b80c8438",
-      "name": "Test Mode?",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.2,
-      "position": [
-        -112,
-        112
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Simulate Extracted Invoice Data\nreturn [{\n  json: {\n    vendor: \"Amazon Web Services\",\n    date: \"2026-02-10\",\n    amount: \"$120.50\",\n    invoice_id: \"INV-2026-001\",\n    summary: \"Monthly hosting fees for Feb 2026.\"\n  }\n}];"
-      },
-      "id": "baf1dbc4-8363-4401-9253-e6f26356e5f6",
-      "name": "Mock Extracted Data",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        176,
-        64
-      ]
-    },
-    {
       "parameters": {
         "modelId": {
           "__rl": true,
           "value": "models/gemini-1.5-flash",
-          "mode": "list",
-          "cachedResultName": "models/gemini-1.5-flash"
+          "mode": "list"
         },
         "messages": {
           "values": [
             {
-              "content": "=Extract the following details from the attached invoice image/PDF.\n\n[Required Fields]\n- Vendor Name\n- Invoice Date (YYYY-MM-DD)\n- Total Amount\n- Invoice ID\n- Short Summary (Item description)\n\n[Output JSON ONLY]\n{\n  \"vendor\": \"...\",\n  \"date\": \"...\",\n  \"amount\": \"...\",\n  \"invoice_id\": \"...\",\n  \"summary\": \"...\"\n}"
+              "content": "Extract details from this invoice for Japanese Invoicing System compliance.\nReturn JSON ONLY.\n\nRequired fields:\n- vendor_name\n- registration_number (Starts with T + 13 digits)\n- date (YYYY-MM-DD)\n- amount_subtotal (Number)\n- amount_tax (Number)\n- amount_total (Number)\n- summary"
             }
           ]
         },
-        "options": {}
+        "options": {
+          "responseMimeType": "application/json"
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1,
       "position": [
         128,
-        208
+        256
       ],
       "id": "5de97095-0c67-4bb7-8830-e57208d973e3",
       "name": "Gemini (Vision)",
@@ -242,15 +80,15 @@
     },
     {
       "parameters": {
-        "jsCode": "// Prepare Data for DB\n// Merges Mock path and Real AI path\nconst mode = $('Config').first().json.TEST_MODE;\nlet data = {};\n\nif (mode === 'true') {\n  data = $('Mock Extracted Data').first().json;\n} else {\n  // Parse Gemini JSON\n  const text = $('Gemini (Vision)').first().json.content.parts[0].text;\n  try {\n    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n    data = JSON.parse(cleanText);\n  } catch (e) {\n    data = { vendor: \"Error\", date: \"\", amount: \"0\", summary: \"Parse Failed\" };\n  }\n}\n\nreturn { json: data };"
+        "jsCode": "// 🧠 Business Logic & Validation Node\nconst mode = $('Config').first().json.TEST_MODE;\nlet rawData = {};\n\nif (mode === 'true' || mode === true) {\n  rawData = {\n    vendor_name: \"Mock Corp\",\n    registration_number: \"T1234567890123\",\n    date: \"2026-04-01\",\n    amount_subtotal: 1000,\n    amount_tax: 100,\n    amount_total: 1100,\n    summary: \"Test data\"\n  };\n} else {\n  rawData = JSON.parse($('Gemini (Vision)').first().json.output);\n}\n\n// 1. Validation: T-Number format (Japan Invoice System)\nconst regNum = rawData.registration_number || \"\";\nconst isRegValid = /^T\\d{13}$/.test(regNum);\n\n// 2. Validation: Tax calculation (Subtotal + Tax = Total)\nconst calcTotal = Number(rawData.amount_subtotal) + Number(rawData.amount_tax);\nconst isTaxValid = Math.abs(calcTotal - Number(rawData.amount_total)) < 1;\n\n// 3. Status Decision\nlet status = \"✅ OK\";\nlet alerts = [];\nif (!isRegValid) alerts.push(\"Invalid Reg Number\");\nif (!isTaxValid) alerts.push(\"Tax Mismatch\");\nif (alerts.length > 0) status = \"⚠️ Review Required: \" + alerts.join(\", \");\n\nreturn {\n  json: {\n    ...rawData,\n    validation_status: status,\n    is_error: alerts.length > 0\n  }\n};"
       },
       "id": "c6f42702-1f44-4fa5-84bc-93ea66652bd8",
-      "name": "Normalize Data",
+      "name": "Logic & Validation",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        496,
-        112
+        448,
+        128
       ]
     },
     {
@@ -259,7 +97,7 @@
         "documentId": {
           "__rl": true,
           "mode": "id",
-          "value": "={{ $('Config').first().json.SHEET_ID }}"
+          "value": "={{ $node.Config.json.SHEET_ID }}"
         },
         "sheetName": {
           "__rl": true,
@@ -269,24 +107,21 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Received": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
-            "Vendor": "={{ $json.vendor }}",
-            "Date": "={{ $json.date }}",
-            "Amount": "={{ $json.amount }}",
-            "Invoice ID": "={{ $json.invoice_id }}",
-            "Summary": "={{ $json.summary }}",
-            "Status": "Pending"
+            "Vendor": "={{ $json.vendor_name }}",
+            "RegNumber": "={{ $json.registration_number }}",
+            "Total": "={{ $json.amount_total }}",
+            "Status": "={{ $json.validation_status }}",
+            "ProcessedAt": "={{ $now.format('yyyy-MM-dd HH:mm') }}"
           }
-        },
-        "options": {}
+        }
       },
       "id": "55a5db49-a237-494b-a4a9-3f518f5621ea",
-      "name": "Save to Sheets",
+      "name": "Save Draft to Sheets",
       "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
+      "typeVersion": 4.5,
       "position": [
-        720,
-        112
+        704,
+        128
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -297,25 +132,46 @@
     },
     {
       "parameters": {
-        "authentication": "oAuth2",
-        "select": "user",
-        "user": {
+        "select": "channel",
+        "channelId": {
           "__rl": true,
-          "mode": "list",
-          "value": ""
+          "value": "general",
+          "mode": "list"
         },
-        "text": "=🧾 **New Invoice Received**\n\n* **Vendor:** {{ $json.vendor }}\n* **Amount:** {{ $json.amount }}\n* **Date:** {{ $json.date }}\n* **Summary:** {{ $json.summary }}\n\nPlease check Google Sheets for details.",
-        "otherOptions": {}
+        "text": "=🧾 *AI Invoice Analysis Complete*",
+        "jsonParameters": true,
+        "blocksUi": {
+          "blocksValues": [
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": "=取引先: *{{ $json.vendor_name }}*\n金額: *¥{{ $json.amount_total.toLocaleString() }}*\n判定: *{{ $json.validation_status }}*"
+              }
+            },
+            {
+              "type": "divider"
+            },
+            {
+              "type": "context",
+              "elements": [
+                {
+                  "type": "mrkdwn",
+                  "text": "=登録番号: {{ $json.registration_number }} | 日付: {{ $json.date }}"
+                }
+              ]
+            }
+          ]
+        }
       },
       "id": "eeb53c6f-cbed-425c-945b-6c3eb6b661b2",
-      "name": "Notify Slack",
+      "name": "Notify Slack (Rich)",
       "type": "n8n-nodes-base.slack",
-      "typeVersion": 2.4,
+      "typeVersion": 2.2,
       "position": [
-        1200,
-        112
+        960,
+        128
       ],
-      "webhookId": "003447b4-ed00-43e6-ae0f-c76d9430aeac",
       "credentials": {
         "slackOAuth2Api": {
           "id": "LTRX0YYlkPgvNCGu",
@@ -324,57 +180,12 @@
       }
     }
   ],
-  "pinData": {},
   "connections": {
     "Config": {
       "main": [
         [
           {
-            "node": "Test Mode?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Gmail Trigger": {
-      "main": [
-        [
-          {
-            "node": "Config",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Manual Trigger": {
-      "main": [
-        [
-          {
-            "node": "Config",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Test Mode?": {
-      "main": [
-        [
-          {
-            "node": "Mock Extracted Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Mock Extracted Data": {
-      "main": [
-        [
-          {
-            "node": "Normalize Data",
+            "node": "Logic & Validation",
             "type": "main",
             "index": 0
           }
@@ -385,46 +196,34 @@
       "main": [
         [
           {
-            "node": "Normalize Data",
+            "node": "Logic & Validation",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Normalize Data": {
+    "Logic & Validation": {
       "main": [
         [
           {
-            "node": "Save to Sheets",
+            "node": "Save Draft to Sheets",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Save to Sheets": {
+    "Save Draft to Sheets": {
       "main": [
         [
           {
-            "node": "Notify Slack",
+            "node": "Notify Slack (Rich)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1",
-    "availableInMCP": false
-  },
-  "versionId": "e98028e1-0d56-4e7e-a842-07d7ccf5cde6",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
-  },
-  "id": "lqD2jvDfeOO59WGO",
-  "tags": []
+  }
 }
