@@ -1,33 +1,31 @@
-# AI Tech Watcher: Personalized News Curator 🗞️
+# 📡 n8n-workflow #21: AI Tech Watcher
+> **「情報に追われる」のをやめ、「選別された知」を受け取る。AIがあなたの代わりに技術の森を監視。**
 
+[![n8n](https://img.shields.io/badge/n8n-Workflow-FF6C37?logo=n8n)](https://n8n.io/)
+[![Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-4285F4?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
+
+技術の進化スピードは、人間が手動でキャッチアップできる限界を超えました。
 ![Screenshot](スクリーンショット21.png)
+AI Tech Watcherは、RSS、SNS、テックブログから最新情報を自動収集し、Geminiが「あなたの興味」に合わせて重要度を判定。忙しいあなたのために、3行で要約してSlackへ届けます。
 
-## Overview
-**Stop doom-scrolling. Let AI curate your news.**
-This workflow automatically fetches the latest articles from your favorite RSS feeds (e.g., TechCrunch, n8n Blog), filters them based on relevance to your job, and sends a concise 3-point summary to Slack.
+## 🌟 このワークフローで解決すること
+- **「後で読む」タブの山を解消**: 100個開いたブラウザのタブを閉じ、本当に読むべき1記事に集中できます。
+- **情報収集の「義務感」からの解放**: 毎日サイトを巡回する時間をゼロにし、開発や創造的な業務にリソースを割けます。
+- **FOMO（取り残される恐怖）の払拭**: AIが24時間体制でウォッチ。重大なアップデートやトレンドを逃しません。
 
-## Key Features
-- **🤖 AI Relevance Filter:** Gemini analyzes the content and discards irrelevant news.
-- **📝 Auto-Summary:** Converts long articles into a 3-bullet point summary in Japanese.
-- **🔄 Smart Deduplication:** Uses JavaScript to remember processed articles and prevents duplicate notifications.
-- **⚡ Loop Processing:** Handles multiple articles efficiently using the Loop node.
+## 🛠 主な機能
+1. **マルチソース・アグリゲーター**: RSS、Qiita、Zenn、海外テックメディアを横断的に監視。
+2. **インテリジェント・フィルタリング**: 「JavaScriptに関することだけ」「自社で使っているスタックのニュースだけ」など、Geminiが文脈を判断して取捨選択。
+3. **超速要約エンジン**: 長文の記事もGemini 1.5 Flashが瞬時に「3つの要点」へ要約。
+4. **パーソナライズ通知**: SlackやDiscordに、アイキャッチ画像とともに整形されたメッセージを配信。
 
-## How It Works
-1. **Trigger:** Scheduled to run every morning (or manually).
-2. **Fetch:** Gets RSS feeds defined in the Config node.
-3. **Filter:** JavaScript code filters out articles that have already been notified.
-4. **Loop & Analyze:** Iterates through new articles, asking **Gemini** to rate and summarize them.
-5. **Notify:** Sends high-relevance news to Slack.
+## 🏗 セットアップ方法
+1. **n8nへのインポート**: `ai-tech-watcher.json` をインポート。
+2. **ソースリストの設定**: 監視したいメディアのURLやキーワードをリストに登録。
+3. **APIキーの設定**:
+   - Google AI Studio (Gemini API)
+   - 各通知ツールの連携
 
-## Setup Steps
-1. **Import:** Import `workflow.json` into n8n.
-2. **Credentials:** Connect Google Gemini and Slack.
-3. **Config:** Open the **"Config"** node to set:
-   - `RSS_URLS`: Comma-separated list of RSS feeds.
-   - `SLACK_CHANNEL`: Your target Slack channel.
-4. **Test:** Click "Execute Workflow".
-
-## Requirements
-- n8n v1.x or later
-- Google Gemini API Key
-- Slack Account
+---
+Produced by [有限会社野田収一事務所](https://alternativecomputers.org/)
+「情報の荒波を、AIという帆で進もう。」
