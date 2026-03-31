@@ -1,34 +1,33 @@
-# Smart Inquiry Responder: AI Drafts & Categorization 📩
+# 💌 n8n-workflow #18: Smart Inquiry Responder
+> **「問い合わせ通知」に怯える日々を卒業。AIが文脈を読み、最適な返信案を即座に提示。**
 
+[![n8n](https://img.shields.io/badge/n8n-Workflow-FF6C37?logo=n8n)](https://n8n.io/)
+[![Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-4285F4?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
+
+お客様からの問い合わせ。返信が遅れれば信頼を損ない、急げばミスが出る。
 ![Screenshot](スクリーンショット18.png)
 
-## Overview
-**Automate the "First Draft" of your customer support.**
-This workflow intercepts inquiries from a contact form, uses **Google Gemini** to analyze the content and category (e.g., Sales, Media, Support), and automatically generates a polite, context-aware draft reply in Japanese. It then logs everything to Google Sheets and notifies you via Slack.
+Smart Inquiry Responderは、AI（Gemini）が問い合わせ内容を解析し、過去のFAQやあなたの口調を学習して「完璧な下書き」を作成。あなたはSlackに届く回答案を確認し、ボタンを押すだけで返信が完了します。
 
-## Key Features
-- **🧠 Context-Aware Drafting:**
-  - **Sales:** Generates a persuasive reply with a meeting link.
-  - **Media:** Generates a welcoming reply asking for proposal details.
-  - **Support:** Generates an empathetic reply promising investigation.
-- **📊 Centralized Logging:** Saves all inquiries and AI drafts to Google Sheets for easy review.
-- **🧪 Built-in Test Mode:** Simulates a "Consulting Request" without submitting a real form.
+## 🌟 このワークフローで解決すること
+- **「返信文章を捻り出す」苦痛からの解放**: ゼロから文章を書く必要はありません。AIが最適なトーン＆マナーで代筆します。
+- **24時間365日の「即レス」体制**: 夜間や休日でも、AIが一時回答や状況説明を自動生成。顧客満足度を爆上げします。
+- **対応品質の均一化**: 誰が対応しても、専門知識に基づいた正確で丁寧な回答が可能になります。
 
-## How It Works
-1. **Input:** User submits an inquiry via n8n Form (Name, Email, Category, Message).
-2. **Analyze:** Gemini acts as a professional secretary to draft a reply based on the category.
-3. **Log:** Adds a new row to Google Sheets with the inquiry details and the draft.
-4. **Notify:** Sends a summary to Slack, prompting you to review the draft.
+## 🛠 主な機能
+1. **マルチチャネル対応**: Googleフォーム、メール、ウェブサイトのチャット等から問い合わせを検知。
+2. **ナレッジ連携**: 自社のFAQデータやマニュアルをGeminiに読み込ませ、正確な情報を抽出。
+3. **人間による最終確認（Human-in-the-loop）**: AIが勝手に送信するのではなく、Slack/Discordで人間に「承認」を求める安全設計。
+4. **感情分析**: 怒っているお客様には謝罪を厚く、急いでいる方には簡潔に。感情に合わせた文章生成。
 
-## Setup Steps
-1. **Import:** Import `workflow.json` into n8n.
-2. **Credentials:** Connect Google Gemini, Google Sheets, and Slack.
-3. **Google Sheets:** Create a sheet named `Inquiries` with columns: `Date`, `Name`, `Email`, `Category`, `Message`, `AI Draft Subject`, `AI Draft Body`, `Status`.
-4. **Config:**
-   - Open **"Config"** to set `SHEET_ID` and `SLACK_CHANNEL`.
-   - Set `TEST_MODE` to `true` to test.
+## 🏗 セットアップ方法
+1. **n8nへのインポート**: `smart-inquiry-responder.json` をインポート。
+2. **ナレッジベースの準備**: よくある質問（FAQ）をGoogleスプレッドシートやNotionに用意。
+3. **APIキーの設定**:
+   - Google AI Studio (Gemini API)
+   - Slack (通知・承認用)
+   - Gmail / SendGrid (返信用)
 
-## Requirements
-- n8n v1.x or later
-- Google Gemini API Key
-- Google Sheets & Slack Account
+---
+Produced by [有限会社野田収一事務所](https://alternativecomputers.org/)
+「お客様への想いを、AIでもっと丁寧に伝えよう。」
