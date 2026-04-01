@@ -1,10 +1,10 @@
 {
-  "name": "Content Repurposer: Blog to Multi-SNS",
+  "name": "Content Repurposer v2 (Pro Marketer Edition)",
   "nodes": [
     {
       "parameters": {
-        "content": "## 📢 Content Repurposer\n\n**Turn 1 Article into 3 Posts.**\nInput a blog/Zenn URL, and **Gemini** will repurpose it for **X (Twitter)**, **LinkedIn**, and **Note**.\n\n**How it works**\n1. **Input:** Submit Article URL via **Form**.\n   - *Test Mode uses a sample tech article.*\n2. **Extract:** **HTML Node** scrapes the main content from the URL.\n3. **Repurpose:** **Gemini** rewrites the content into 3 distinct formats:\n   - **X:** Thread format (hook + points).\n   - **LinkedIn:** Professional insight.\n   - **Note:** Summary with bullet points.\n4. **Save:** Logs all drafts to **Google Sheets**.\n\n**Setup steps**\n1. **Credentials:** Connect Gemini, Sheets.\n2. **Config:** Open **\"Config\"** to set Sheet ID.\n3. **Test:** Set `TEST_MODE` to `true`.",
-        "height": 380,
+        "content": "## 📢 Content Repurposer v2\n\n**2026 Standard Upgrade:**\n1. **Model Upgrade:** `gemini-1.5-pro` grasps the deep context of the original article.\n2. **Persona Separation:** Strict JSON output for X (Hook), LinkedIn (Business), and Newsletter (Friendly).\n3. **Human-in-the-loop:** Delivers a beautiful preview dashboard to Slack for final manual approval before posting.",
+        "height": 300,
         "width": 500,
         "color": 3
       },
@@ -19,75 +19,18 @@
     },
     {
       "parameters": {
-        "content": "## ⚙️ Configuration\nSet Sheet ID.",
-        "height": 140,
-        "color": 6
-      },
-      "id": "59670725-4336-4008-aff7-90c876e382c7",
-      "name": "Sticky Note - Config",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -528,
-        32
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## 🔗 Article Input\nURL or Mock Data.",
-        "height": 340,
-        "width": 760,
-        "color": 6
-      },
-      "id": "5a6d8192-d326-41dc-ad8f-5de345c1725f",
-      "name": "Sticky Note - Input",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -256,
-        32
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## 🧠 Content Studio\nScrape & Rewrite.",
-        "height": 140,
-        "width": 440,
-        "color": 6
-      },
-      "id": "3eb9ac87-2344-4b0c-b483-088f80cc920c",
-      "name": "Sticky Note - AI",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        576,
-        32
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## 📤 Output\nSave Drafts.",
-        "height": 140,
-        "width": 380,
-        "color": 6
-      },
-      "id": "9d698460-c58b-4a34-bf29-59cb80d310c6",
-      "name": "Sticky Note - Output",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1056,
-        32
-      ]
-    },
-    {
-      "parameters": {
         "assignments": {
           "assignments": [
             {
               "id": "id-1",
               "name": "SHEET_ID",
-              "value": "",
+              "value": "YOUR_SHEET_ID_HERE",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "SLACK_CHANNEL",
+              "value": "general",
               "type": "string"
             },
             {
@@ -97,9 +40,7 @@
               "type": "string"
             }
           ]
-        },
-        "includeOtherFields": true,
-        "options": {}
+        }
       },
       "id": "d33725be-d9f9-4078-8eaf-abf31eda6b73",
       "name": "Config",
@@ -112,8 +53,8 @@
     },
     {
       "parameters": {
-        "formTitle": "📢 Content Repurposer",
-        "formDescription": "Enter Article URL to generate SNS drafts.",
+        "formTitle": "📢 Content Repurposer (AI Multi-Post)",
+        "formDescription": "Enter an Article URL to magically generate posts for X, LinkedIn, and Newsletter.",
         "formFields": {
           "values": [
             {
@@ -122,8 +63,7 @@
               "requiredField": true
             }
           ]
-        },
-        "options": {}
+        }
       },
       "id": "84c50095-3267-4485-9af6-01c59e651f94",
       "name": "Form Trigger",
@@ -143,7 +83,7 @@
       "typeVersion": 1,
       "position": [
         -592,
-        256
+        288
       ]
     },
     {
@@ -159,8 +99,8 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "",
-                    "rightValue": "",
+                    "leftValue": "={{ $('Config').first().json.TEST_MODE }}",
+                    "rightValue": "true",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
@@ -179,20 +119,20 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -208,
-        96
+        -176,
+        128
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Simulate Article Content\nreturn [{\n  json: {\n    \"Article URL\": \"https://example.com/test-article\",\n    \"content\": \"# Why Automation Matters\\nIn 2026, automation is not just for efficiency; it's for survival. Small businesses can now leverage AI tools like n8n and Gemini to compete with giants. By automating routine tasks such as invoicing, social media, and customer support, you free up time for creative strategy. This article explores 3 key workflows...\"\n  }\n}];"
+        "jsCode": "// Simulate High-Quality Article Content\nreturn [{\n  json: {\n    \"Article URL\": \"https://example.com/test-article\",\n    \"content\": \"【2026年最新】中小企業のバックオフィスDX戦略\\n\\n多くの企業がDXに行き詰まる理由は「大掛かりなシステム導入」から始めるからです。本当のDXは、現場の担当者が毎日行っている「コピペ作業」や「確認作業」を自動化することから始まります。本記事では、n8nとGeminiを活用し、請求書の自動処理や、健康管理の自動化など、現場の『痛み』を直接取り除くスモールスタートの手法を解説します。重要なのは、AIに全てを丸投げするのではなく、最後の確認（Human-in-the-loop）を残すことです。\"\n  }\n}];"
       },
       "id": "0cb8dc8e-c9d2-4bb5-a5f2-a4a106d47575",
       "name": "Mock Article",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        32,
+        64,
         64
       ]
     },
@@ -206,7 +146,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        32,
+        64,
         224
       ]
     },
@@ -227,45 +167,46 @@
       "type": "n8n-nodes-base.htmlExtract",
       "typeVersion": 1,
       "position": [
-        224,
+        256,
         224
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Merge Input\nconst mode = $('Config').first().json.TEST_MODE;\nlet data = {};\n\nif (mode === 'true') {\n  data = $('Mock Article').first().json;\n} else {\n  data = {\n    \"Article URL\": $('Form Trigger').first().json[\"Article URL\"],\n    \"content\": $('Extract Text').first().json.content\n  };\n}\n// Truncate content if too long\nif (data.content.length > 8000) data.content = data.content.substring(0, 8000);\n\nreturn { json: data };"
+        "jsCode": "const mode = $('Config').first().json.TEST_MODE;\nlet data = {};\n\nif (mode === 'true' || mode === true) {\n  data = $('Mock Article').first().json;\n} else {\n  data = {\n    \"Article URL\": $('Form Trigger').first().json[\"Article URL\"],\n    \"content\": $('Extract Text').first().json.content\n  };\n}\n// Context window protection\nif (data.content.length > 20000) data.content = data.content.substring(0, 20000);\n\nreturn { json: data };"
       },
       "id": "fdb2e30f-0b71-4516-abb9-38f35b445986",
       "name": "Normalize Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        400,
-        96
+        448,
+        128
       ]
     },
     {
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "models/gemini-1.5-flash",
-          "mode": "list",
-          "cachedResultName": "models/gemini-1.5-flash"
+          "value": "models/gemini-1.5-pro",
+          "mode": "list"
         },
         "messages": {
           "values": [
             {
-              "content": "=Act as a Social Media Manager.\nRepurpose the following article content into 3 distinct formats for X (Twitter), LinkedIn, and Note.\n\n[Article Content]\n{{ $json.content }}\n\n[Instructions]\n1. **X (Twitter):** Create a thread hook (engaging question or statement) + 3 bullet points + hashtags.\n2. **LinkedIn:** Create a professional insight post focusing on business value.\n3. **Note:** Create a summary post with \"Key Takeaways\".\n4. Language: Japanese.\n\n[Output JSON ONLY]\n{\n  \"x_post\": \"...\",\n  \"linkedin_post\": \"...\",\n  \"note_post\": \"...\"\n}"
+              "content": "=あなたは一流のデジタルマーケター兼コピーライターです。\n以下の元記事の文脈を深く理解し、3つの異なるプラットフォーム向けに再構成（リパーパス）してください。\n\n[元記事のテキスト]\n{{ $json.content }}\n\n[各プラットフォームのペルソナと要件]\n1. X (旧Twitter): 最初の1文で強烈に惹きつけるフック、箇条書きによる簡潔な要約、読者の反響を呼ぶ問いかけ。140文字程度のスレッドの1ツイート目として構成。\n2. LinkedIn: プロフェッショナル向け。ビジネス上の「痛み」とその「解決策」を論理的に提示し、自身の専門性を示すトーン。\n3. Newsletter (メルマガ): 読者への親近感のある語りかけから始まり、記事の裏話や、「なぜこの記事を書いたのか」というストーリーテリングを交える。\n\n[Output JSON ONLY]\n{\n  \"x_post\": \"...\",\n  \"linkedin_post\": \"...\",\n  \"newsletter_post\": \"...\"\n}"
             }
           ]
         },
-        "options": {}
+        "options": {
+          "responseMimeType": "application/json"
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1,
       "position": [
-        608,
-        96
+        656,
+        128
       ],
       "id": "27107819-cf88-48f6-9a39-3bd9d5211e35",
       "name": "Gemini: Repurpose",
@@ -278,186 +219,4 @@
     },
     {
       "parameters": {
-        "jsCode": "// Parse JSON\nconst text = $input.first().json.content.parts[0].text;\nlet result = {};\ntry {\n  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  result = JSON.parse(cleanText);\n} catch (e) {\n  result = { x_post: \"Error\", linkedin_post: \"Error\", note_post: text };\n}\nreturn { json: result };"
-      },
-      "id": "42ecc519-b2c5-4a0b-b564-96f121f9da2b",
-      "name": "Parse JSON",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        880,
-        96
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "appendOrUpdate",
-        "documentId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $('Config').first().json.SHEET_ID }}"
-        },
-        "sheetName": {
-          "__rl": true,
-          "mode": "name",
-          "value": "ContentDrafts"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
-            "URL": "={{ $('Normalize Input').first().json[\"Article URL\"] }}",
-            "X Post": "={{ $json.x_post }}",
-            "LinkedIn Post": "={{ $json.linkedin_post }}",
-            "Note Post": "={{ $json.note_post }}"
-          }
-        },
-        "options": {}
-      },
-      "id": "494605ea-4719-4daf-9a13-6e149204a91b",
-      "name": "Save to Sheets",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
-      "position": [
-        1168,
-        96
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "kETRjtRKedfCcNUZ",
-          "name": "Google Sheets account"
-        }
-      }
-    }
-  ],
-  "pinData": {},
-  "connections": {
-    "Form Trigger": {
-      "main": [
-        [
-          {
-            "node": "Config",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Manual Trigger": {
-      "main": [
-        [
-          {
-            "node": "Config",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Mock Article": {
-      "main": [
-        [
-          {
-            "node": "Normalize Input",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get Page HTML": {
-      "main": [
-        [
-          {
-            "node": "Extract Text",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extract Text": {
-      "main": [
-        [
-          {
-            "node": "Normalize Input",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Normalize Input": {
-      "main": [
-        [
-          {
-            "node": "Gemini: Repurpose",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Gemini: Repurpose": {
-      "main": [
-        [
-          {
-            "node": "Parse JSON",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Parse JSON": {
-      "main": [
-        [
-          {
-            "node": "Save to Sheets",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Test Mode?": {
-      "main": [
-        [
-          {
-            "node": "Mock Article",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Get Page HTML",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Config": {
-      "main": [
-        [
-          {
-            "node": "Test Mode?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1",
-    "availableInMCP": false
-  },
-  "versionId": "fa887f15-c6af-4664-9e4f-c4f8b9b2ed36",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "d6998d68d5ddde8bdb1a2d6a16f88f7d0cef5f647d1548b25f1adf37764062db"
-  },
-  "id": "AWveOxty4k54tDSU",
-  "tags": []
-}
+        "jsCode": "const rawOutput = $input.first().json.output || $input.first().json.content.parts[0].text;\nlet result = {};\ntry {\n  const cleanText = rawOutput.replace(/
